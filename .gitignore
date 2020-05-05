@@ -1,0 +1,6 @@
+*.html
+*.pdf
+*~
+_build/*
+*.swp
+*.exe
