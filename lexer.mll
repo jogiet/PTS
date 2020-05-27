@@ -14,14 +14,14 @@
 			 pos_bol = pos.pos_cnum }
 
   let find_keyword s =
-    let _ = Printf.printf "lexing %s\n" s in
     match s with
     | "Π" -> FORALL
     | "λ" -> LAMBDA
+    | "let" -> LET
+    | "in" -> IN
     | _ -> IDENT s
 
   let handle_escaped s =
-    let _ = Printf.printf "lexing %s\n" s in
     let simple = String.(sub s 1 (length s -1)) in
     match simple with
     | "l" | "lamb" | "lambda" -> LAMBDA
@@ -66,13 +66,14 @@ let space = ' '|'\t'
 rule next_tokens = parse
 	| space+
 		{next_tokens lexbuf}
-	| '.' {let _ = Printf.printf "lexing .\n" in DOT}
-  | ':' {let _ = Printf.printf "lexing :\n" in DDOT}
-	| '(' {let _ = Printf.printf "lexing (\n" in LPAR}
+  | '=' {EQUAL}
+	| '.' {DOT}
+  | ':' {DDOT}
+	| '(' {LPAR}
 	| eof {EOF}
-	| ')' {let _ = Printf.printf "lexing )\n" in RPAR}
-  | '*' {let _ = Printf.printf "lexing *\n" in IDENT "*"}
-  | "∀" {let _ = Printf.printf "lexing ∀\n" in FORALL}
+	| ')' {RPAR}
+  | '*' {IDENT "*"}
+  | "∀" {FORALL}
   | "->" {ARROW}
   | "→"  {ARROW}
   | "□" {IDENT "□"} 

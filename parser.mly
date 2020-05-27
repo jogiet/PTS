@@ -8,8 +8,10 @@ open Ast
 
 
 %token LAMBDA 
-%token FORALL
+%token FORALL 
+%token LET IN
 %token ARROW
+%token EQUAL
 %token EOF
 %token LPAR RPAR DDOT DOT
 
@@ -51,11 +53,13 @@ abstraction :
 		{Prod (i, t, l)}
   | FORALL; i = ident; DDOT; t = application; DOT; l = application
 		{Prod (i, t, l)}
+  | LET; i = ident; EQUAL; d = application; IN; l = application
+    {Let (i, d, l)}
   | l_arrow = separated_nonempty_list(ARROW, atom_arrow);
     { let rec aux = function
       | [] -> assert false
       | [x] -> x
-      | t::q -> Prod ("_", t, aux q) in
+      | t::q -> Prod ("-", t, aux q) in
       aux l_arrow 
     }
 

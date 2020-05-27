@@ -12,7 +12,7 @@ let pretty_printer latex fmt t =
         print_atom t2
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ -> 
+    | Lam _ | Prod _ | Let _ -> 
         Printf.fprintf fmt "(%a)"
         print_atom t
   and print_app_par fmt t =
@@ -29,7 +29,7 @@ let pretty_printer latex fmt t =
         print_atom t2
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ -> 
+    | Lam _ | Prod _ | Let _ -> 
         Printf.fprintf fmt "(%a)"
         print_atom t
   and print_atom fmt t = 
@@ -43,6 +43,15 @@ let pretty_printer latex fmt t =
         Printf.fprintf fmt "λ(%s:%a).%a"
           id
           print_atom t1
+          print_global t2
+    | Let (id, t1, t2) ->
+        let let_bind = if latex then "\\texttt{ let }" else "let" in
+        let in_bind = if latex then "\\texttt{ in }" else "in" in
+        Printf.fprintf fmt "%s %s = %a %s %a"
+          let_bind 
+          id
+          print_atom t1
+          in_bind
           print_global t2
     | Prod (id, t1, t2) ->
         if IdSet.mem id (get_fv t2) then
@@ -58,7 +67,7 @@ let pretty_printer latex fmt t =
     match t with
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ ->
+    | Lam _ | Prod _ | Let _ ->
         print_atom fmt t
     | App _ ->
         print_app fmt t
@@ -68,18 +77,47 @@ let pretty_printer_latex = pretty_printer true
 
 let pretty_printer = pretty_printer false
 
-let rec print_typing_env fmt env =
-  match env with
-  | [] -> Printf.fprintf fmt ""
-  | (id, t)::[] ->
-    Printf.fprintf fmt "%s :%a" id pretty_printer_latex t
-  | (id, t)::q ->
-    let _ = Printf.fprintf fmt "%s :%a; " id pretty_printer_latex t in
-    print_typing_env fmt q
+let rec print_typing_def latex fmt def =
+  if IdMap.is_empty def then () else
+    let _ = if latex then Printf.fprintf fmt "\\left\\{\\begin{array}{rl}" in
+    let _ = IdMap.iter
+      (fun id t -> 
+        if latex then 
+          Printf.fprintf fmt "%s&:= %a\\\\"
+            id pretty_printer_latex t
+        else
+          Printf.fprintf fmt "%s := %a;"
+            id pretty_printer t)
+      def
+    in
+    let _ = if latex then Printf.fprintf fmt "\\end{array}\\right\\|" in
+    ()
 
-let print_typing_judgment fmt (env, t1, t2) =
-  Printf.fprintf fmt "%a ⊢ %a:%a"
-    print_typing_env env
+let print_typing_def_latex = print_typing_def true
+let print_typing_def = print_typing_def false
+
+let rec print_typing_env latex fmt env =
+  if env = [] then () else
+    let _ = if latex then Printf.fprintf fmt "\\begin{array}{rl}" in
+    let _ = List.iter
+      (fun (id, t) -> 
+        if latex then 
+          Printf.fprintf fmt "%s:& %a\\\\"
+            id pretty_printer_latex t
+        else
+          Printf.fprintf fmt "%s: %a;"
+            id pretty_printer t)
+      env in
+    let _ = if latex then Printf.fprintf fmt "\\end{array}" in
+    ()
+
+let print_typing_env_latex = print_typing_env true
+let print_typing_env = print_typing_env false
+
+let print_typing_judgment fmt (def, env, t1, t2) =
+  Printf.fprintf fmt "%a%a ⊢ %a:%a"
+    print_typing_def_latex def
+    print_typing_env_latex env
     pretty_printer_latex t1
     pretty_printer_latex t2
 
@@ -127,15 +165,15 @@ let print_typing_syst = print_typing_syst false
 let rec print_typing_tree offset fmt (tree: typing_tree) =
   match tree with
   | Ast.Axiom j -> 
-      let _, t, ty = j in
+      let _, _, t, ty = j in
       let rule = "\\RightLabel{Ax}" in
       Printf.fprintf fmt "%s\\AXC{$(%a, %a)∈ 𝒜 $}\n%s%s\n%s\\UIC{$%a$}\n"
         offset 
         pretty_printer_latex t pretty_printer_latex ty
         offset rule
         offset print_typing_judgment j
-  | Ast.Weakening (tree1, tree2, j) ->
-      let rule = "\\RightLabel{Weak}" in
+  | Ast.Weakening (id, tree1, tree2, j) ->
+      let rule = Printf.sprintf "\\RightLabel{Weak %s}" id in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
         (print_typing_tree new_offset) tree1
@@ -166,6 +204,14 @@ let rec print_typing_tree offset fmt (tree: typing_tree) =
         (print_typing_tree new_offset) tree3
         offset rule
         offset print_typing_judgment j
+  | Ast.LetIntro (tree1, tree2, j) ->
+      let rule = "\\RightLabel{Let}" in
+      let new_offset = "  "^offset in
+      Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
+        (print_typing_tree new_offset) tree1
+        (print_typing_tree new_offset) tree2
+        offset rule
+        offset print_typing_judgment j
   | Ast.Application (tree1, tree2, j) ->
       let rule = "\\RightLabel{App}" in
       let new_offset = "  "^offset in
@@ -177,7 +223,7 @@ let rec print_typing_tree offset fmt (tree: typing_tree) =
   | Ast.Conversion (tree1, t1, t2, tree2, j) ->
       let rule = "\\RightLabel{Conv}" in
       let new_offset = "  "^offset in
-      Printf.fprintf fmt "%a%a%s\\AXC{$%a ~_{αβ} %a$}\n%s%s\n%s\\TIC{$%a$}\n"
+      Printf.fprintf fmt "%a%a%s\\AXC{$%a \\sim_{αβ} %a$}\n%s%s\n%s\\TIC{$%a$}\n"
         (print_typing_tree new_offset) tree1
         (print_typing_tree new_offset) tree2
         new_offset pretty_printer_latex t1 pretty_printer_latex t2
@@ -188,20 +234,17 @@ let rec print_typing_tree offset fmt (tree: typing_tree) =
 let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
   match tree with
   | Ast.Axiom j -> 
-      let _, t, ty = j in
+      let _, _, t, ty = j in
       let rule = "\\RightLabel{Ax}" in
       Printf.fprintf fmt "%s\\AXC{$(%a, %a)∈ 𝒜 $}\n%s%s\n%s\\UIC{$%a$}\n"
         offset 
         pretty_printer_latex t pretty_printer_latex ty
         offset rule
         offset print_typing_judgment j
-  | Ast.Weakening (tree1, tree2, j) ->
-      let rule = "\\RightLabel{Weak}" in
+  | Ast.Weakening (id, tree1, tree2, j) ->
       let new_offset = "  "^offset in
-      Printf.fprintf fmt "%a%s%s\n%s\\UIC{$%a$}\n"
+      Printf.fprintf fmt "%a"
         (print_typing_tree_sparse new_offset) tree1
-        offset rule
-        offset print_typing_judgment j
   | Ast.Start (tree, j) ->
       let rule = "\\RightLabel{Start}" in
       Printf.fprintf fmt "%s\\AXC{}\n%s%s\n%s\\UIC{$%a$}\n"
@@ -222,6 +265,14 @@ let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
         (print_typing_tree_sparse new_offset) tree2
         offset rule
         offset print_typing_judgment j
+  | Ast.LetIntro (tree1, tree2, j) ->
+      let rule = "\\RightLabel{$Let$}" in
+      let new_offset = "  "^offset in
+      Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
+        (print_typing_tree_sparse new_offset) tree1
+        (print_typing_tree_sparse new_offset) tree2
+        offset rule
+        offset print_typing_judgment j
   | Ast.Application (tree1, tree2, j) ->
       let rule = "\\RightLabel{App}" in
       let new_offset = "  "^offset in
@@ -233,10 +284,8 @@ let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
   | Ast.Conversion (tree1, t1, t2, tree2, j) ->
       let rule = "\\RightLabel{Conv}" in
       let new_offset = "  "^offset in
-      Printf.fprintf fmt "%a%a%s\\AXC{$%a ~_{αβ} %a$}\n%s%s\n%s\\TIC{$%a$}\n"
+      Printf.fprintf fmt "%a\n%s%s\n%s\\UIC{$%a$}\n"
         (print_typing_tree_sparse new_offset) tree1
-        (print_typing_tree_sparse new_offset) tree2
-        new_offset pretty_printer_latex t1 pretty_printer_latex t2
         offset rule
         offset print_typing_judgment j
 
@@ -261,7 +310,7 @@ let print_proof syst tree file =
   let _ = Printf.fprintf chan "%s\n\n%a\n\\\\ \n\\\\\ \n\n%a\n\n%s"
     header
     print_typing_syst_latex syst
-    (print_typing_tree "  ") tree
+    (print_typing_tree_sparse "  ") tree
     footer in
   let _ = close_out chan in
   ()

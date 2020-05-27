@@ -30,6 +30,7 @@ type term =
   (** Lambda abstraction : [Lam (x, A, B)] : λ(x: A).B *)
   | Prod of (ident * term * term)   
   (** Product abstraction : [Prod (x, A, B)] : ∀(x: A). B *)
+  | Let of (ident * term * term)
 
   (** We assume that a system is functionnal *)
 type system = 
@@ -43,76 +44,48 @@ type system =
 
 (** {5 Typing} *)
 
+type typing_def = term IdMap.t
+
   (** A typing environment is a map [x] ↦ [term].
    Sort should not appear in typing environment *)
 type typing_env = (ident * term) list
     
-type typing_judgement = typing_env * term * term
+type typing_judgement = typing_def * typing_env * term * term
 
 type typing_tree = 
   | Axiom of typing_judgement
   | Weakening of
-      (typing_tree * typing_tree * typing_judgement)
+      (ident * typing_tree * typing_tree * typing_judgement)
   | Start of
       (typing_tree * typing_judgement)
   | Product of 
       (typing_tree * typing_tree * typing_judgement)
   | Abstraction of 
       (typing_tree * typing_tree * typing_tree * typing_judgement)
+  | LetIntro of 
+      (typing_tree * typing_tree * typing_judgement)
   | Application of
       (typing_tree * typing_tree * typing_judgement)
   | Conversion of
       (typing_tree * term * term * typing_tree * typing_judgement)
 
+(** {5 Utilities} *)
+
 let get_judgment = function
   | Axiom j -> j
-  | Weakening (_, _, j) -> j
+  | Weakening (_, _, _, j) -> j
   | Start (_, j) -> j
   | Product (_, _, j) -> j
   | Abstraction (_, _, _, j) -> j
+  | LetIntro (_, _, j) -> j
   | Application (_, _, j) -> j
   | Conversion (_, _, _, _, j) -> j
-
-
-(** {5 Utilities} *)
-
-  (** [alpha_equiv t t'] returns [true] iff [t] ~α [t'] *)
-let alpha_equiv t t' = 
-  let rec aux map t t' = 
-    match t, t' with
-    | Var s, Var s' when s = s' -> true
-    | Var x, Var x' ->
-        IdMap.find x map = x'
-    | App (t1, t2), App (t1', t2') ->
-        aux map t1 t1' && aux map t2 t2'
-    | Lam (x, t1, t2), Lam (x', t1', t2')
-    | Prod (x, t1, t2), Prod (x', t1', t2') ->
-        let map' = IdMap.add x x' map in
-        aux map t1 t1' && aux map' t2 t2'
-    | _, _ -> false
-  in aux IdMap.empty t t'
-
-
-  (** [subst x t t'] remplaces all free occurences of [x] by [t] in [t'] *)
-let rec subst x t = function
-  | Var id when id = x -> t
-  | Var id -> Var id
-  | Lam (id, t1, t2) when id = x ->
-      Lam (id, subst x t t1, t2)
-  | Prod (id, t1, t2) when id = x ->
-      Prod (id, subst x t t1, t2)
-  | Lam (id, t1, t2) ->
-      Lam (id, subst x t t1, subst x t t2)
-  | Prod (id, t1, t2) ->
-      Prod (id, subst x t t1, subst x t t2)
-  | App (t1, t2) -> 
-      App (subst x t t1, subst x t t2)
-
 
 let rec get_fv = function
   | Var id -> IdSet.singleton id
   | Lam (id, t1, t2)
-  | Prod (id, t1, t2) ->
+  | Prod (id, t1, t2)
+  | Let (id, t1, t2) ->
       let set = IdSet.union (get_fv t1) (get_fv t2) in
       IdSet.remove id set
   | App (t1, t2) ->

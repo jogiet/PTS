@@ -17,8 +17,8 @@ let report (b,e) =
 let main x =
   let _ = Printf.printf "term = %a\n" pretty_printer x in
   let _ = if !parse_only then exit 0 in
-  let t, tree = type_check syst_f [] x in
-  let _ = print_proof syst_f tree "file.tex" in
+  let t, tree = type_check syst_f IdMap.empty [] x in
+  let _ = if !get_proof then print_proof syst_f tree proof_file in
   let _ = Printf.printf "type = %a\n" pretty_printer t in
   let _ = if !type_only then exit 0 in
   let x = get_nf x in
