@@ -6,6 +6,7 @@ and type_only   = ref false
 and type_debug  = ref false
 and reduc_debug = ref false
 and get_proof   = ref false
+and verb_proof  = ref false
 and proof_file  = ref ""
 and color       = ref false
 
@@ -19,6 +20,8 @@ let spec =
       " Print the intermediate reduction steps" ;
    "--get-proof", Arg.Set get_proof,
       " Print the typing tree in a tex file" ;
+   "--verb-proof", Arg.Set verb_proof,
+      " Print the typing tree in a verbose mode" ;
    "--proof-file", Arg.Set_string proof_file,
       " Set the proof filename (default is filname.tex)"; 
    "--color", Arg.Set color, " Print in stdout in color"]

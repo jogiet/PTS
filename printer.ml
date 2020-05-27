@@ -79,7 +79,7 @@ let pretty_printer = pretty_printer false
 
 let rec print_typing_def latex fmt def =
   if IdMap.is_empty def then () else
-    let _ = if latex then Printf.fprintf fmt "\\left\\{\\begin{array}{rl}" in
+    let _ = if latex then Printf.fprintf fmt "\\left\\{\\begin{array}{r@{\\,}l}" in
     let _ = IdMap.iter
       (fun id t -> 
         if latex then 
@@ -98,7 +98,7 @@ let print_typing_def = print_typing_def false
 
 let rec print_typing_env latex fmt env =
   if env = [] then () else
-    let _ = if latex then Printf.fprintf fmt "\\begin{array}{rl}" in
+    let _ = if latex then Printf.fprintf fmt "\\begin{array}{r@{\\,}l}" in
     let _ = List.iter
       (fun (id, t) -> 
         if latex then 
@@ -307,10 +307,15 @@ let print_proof syst tree file =
 \\end{document}"
   in 
   let chan = open_out file in
+  let printer = if !Options.verb_proof  then
+    print_typing_tree "  "
+  else
+    print_typing_tree_sparse "  "
+  in
   let _ = Printf.fprintf chan "%s\n\n%a\n\\\\ \n\\\\\ \n\n%a\n\n%s"
     header
     print_typing_syst_latex syst
-    (print_typing_tree_sparse "  ") tree
+    printer tree
     footer in
   let _ = close_out chan in
   ()
