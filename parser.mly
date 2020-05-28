@@ -19,13 +19,13 @@ open Ast
 
 %start file
 
-%type <Ast.term> file
+%type <Ast.term * (Ast.system option)> file
 
 %%
 
 file: 
     | l = application; EOF
-		{l}
+		{l, None}
 
 application:
     | l = atom_app+;

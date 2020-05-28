@@ -32,8 +32,6 @@ let usage = "usage: main [option] file.f"
 let file =
 	let file = ref None in
 	let set_file s =
-		if not (Filename.check_suffix s ".f") then
-			raise (Arg.Bad "no .f extension");
 		file := Some s
 	in begin
 		Arg.parse spec set_file usage;
