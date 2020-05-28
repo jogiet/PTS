@@ -96,5 +96,6 @@ let rec get_nf t =
       Printf.printf "On continue...\n  %a\n" pretty_printer t in
     get_nf t
   else
-    let _ = Printf.printf "Forme normale atteinte en %i étapes\n" !steps in
+    let _ = if !reduc_debug then
+      Printf.printf "Forme normale atteinte en %i étapes\n" !steps in
     t

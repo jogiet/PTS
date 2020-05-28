@@ -30,10 +30,11 @@ exception Def_found of ident
   (** [type_check syst def env term]  returns a [typ] such that the judgment 
    [def];[env]⊢ [term]:[typ] in [syst] holds *)
 let rec type_check syst def env term : term * typing_tree  =
+  let _ = if !type_debug then
+    Printf.printf "%s|->trying to type : %a\n" 
+      !ident pretty_printer term in
   let _ = add () in
   let _ = if !type_debug then
-    let _ = Printf.printf "%strying to type : %a\n" 
-      !ident pretty_printer term in
     let _ = Printf.printf "%senv = %a\n" 
       !ident print_typing_env env in
     let _ = Printf.printf "%sdef = %a\n" 
@@ -50,6 +51,8 @@ let rec type_check syst def env term : term * typing_tree  =
       try 
         let s' = IdMap.find s syst.axioms in
         let j = def, [], Var s, Var s' in
+        let _ = if !type_debug then 
+          Printf.printf "%sτ = %a\n" !ident pretty_printer (Var s') in
         let _ = sub () in
         Var s', Axiom j
       with Not_found ->
@@ -63,6 +66,8 @@ let rec type_check syst def env term : term * typing_tree  =
     let new_def = IdMap.remove y def in
     let _, tree = type_check syst new_def new_env typ in
     let j = def, env, term, typ in 
+    let _ = if !type_debug then 
+      Printf.printf "%sτ = %a\n" !ident pretty_printer typ in
     let _ = sub () in
     typ, Start (tree, j)
   end
@@ -83,6 +88,8 @@ let rec type_check syst def env term : term * typing_tree  =
       let _, tree3 = type_check syst def new_env typ2 in
       let typ_res = Prod (x, t1, typ2) in
       let j = def, env, term, typ_res in
+      let _ = if !type_debug then 
+        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
       find_def syst def env typ_res (Abstraction (tree1, tree2, tree3, j))
   | Let (id, d, t), env ->
@@ -93,6 +100,8 @@ let rec type_check syst def env term : term * typing_tree  =
       let new_env = (id, tyd)::env in
       let typ_res, tree2 = type_check syst new_def new_env t in
       let j = def, env, term, typ_res in
+      let _ = if !type_debug then 
+        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
       typ_res, LetIntro (tree1, tree2, j)
   | Prod (x, t1, t2), env ->
@@ -109,6 +118,8 @@ let rec type_check syst def env term : term * typing_tree  =
             let s3 = Id2Map.find (s1, s2) syst.rules in
             let typ_res = Var s3 in
             let j = def, env, term, typ_res in
+            let _ = if !type_debug then 
+              Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
             let _ = sub () in
             typ_res, Product (tree1, tree2, j)
           with
@@ -129,6 +140,8 @@ let rec type_check syst def env term : term * typing_tree  =
           let _ = conversion syst def env ty1' ty2 in
           let typ_res = subst x t2 ty_res in
           let j = def, env, term, typ_res in
+          let _ = if !type_debug then 
+            Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
           let _ = sub () in
           typ_res, Application (tree1, tree2, j)
       | Var id when IdMap.mem id def ->
@@ -139,6 +152,8 @@ let rec type_check syst def env term : term * typing_tree  =
               let _ = conversion syst def env ty1' ty2 in
               let typ_res = subst x t2 ty_res in
               let j = def, env, term, typ_res in
+              let _ = if !type_debug then 
+                Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
               let _ = sub () in
               typ_res, Application (tree1, tree2, j)
           | t -> 
@@ -151,13 +166,18 @@ let rec type_check syst def env term : term * typing_tree  =
       | _ -> assert false
 
 and weaken syst def env term: term * typing_tree =
+  let _ = if !type_debug then 
+    Printf.printf "%sApply Weakening\n" !ident in
   let y, typ_y = List.hd env in
   let new_env = List.tl env in
   let new_def = IdMap.remove y def in
-  let typ , tree1 = type_check syst new_def new_env term in
+  let typ_res , tree1 = type_check syst new_def new_env term in
   let _ , tree2 = type_check syst new_def new_env typ_y in
-  let j = def, env, term, typ in
-  typ, Weakening (y, tree1, tree2, j)
+  let _ = if !type_debug then 
+    Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+  let _ = sub () in
+  let j = def, env, term, typ_res in
+  typ_res, Weakening (y, tree1, tree2, j)
 
 and find_def syst def env typ tree: term * typing_tree =
   try 
