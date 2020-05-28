@@ -1,0 +1,7 @@
+-- It's possible to define basic type constructor in System F but if we want to
+-- explicitly write type constructor "pair", we need to have functions from type
+-- to type.
+let pair = λ (α : *).λ (β : *). ∀ (γ : *). (α -> β -> γ) -> γ in
+let swap = λ (α : *).λ (β : *). λ (p: pair α β). λ (γ : *).
+		λ (f: β -> α -> γ). p γ (λ (x: α). λ (y: β). f y x) in
+λ α : *. λ x: α. x
