@@ -3,9 +3,6 @@ open Reduc
 open Printer
 open Options
 
-
-module B = Buffer
-
 let is_sort syst s =
   IdSet.mem s syst.sorts
 
@@ -29,7 +26,8 @@ exception Def_found of ident
 
   (** [type_check syst def env term]  returns a [typ] such that the judgment 
    [def];[env]⊢ [term]:[typ] in [syst] holds *)
-let rec type_check syst def env term : term * typing_tree  =
+let rec type_check (syst: system) (def: typing_def) (env: typing_env) term : 
+  term * typing_tree  =
   let _ = if !type_debug then
     Printf.printf "%s|->trying to type : %a\n" 
       !ident pretty_printer term in
@@ -128,14 +126,13 @@ let rec type_check syst def env term : term * typing_tree  =
               failwith err
       end
       | _ -> assert false
-
   end
   | App (t1, t2), env ->
       let _ = if !type_debug then 
         Printf.printf "%sApply Application\n" !ident in
       let ty1, tree1 = type_check syst def env t1 in
       let ty2, tree2 = type_check syst def env t2 in
-      match ty1 with
+      match get_nf_def def ty1 with
       | Prod (x, ty1', ty_res) ->
           let _ = conversion syst def env ty1' ty2 in
           let typ_res = subst x t2 ty_res in
@@ -144,28 +141,13 @@ let rec type_check syst def env term : term * typing_tree  =
             Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
           let _ = sub () in
           typ_res, Application (tree1, tree2, j)
-      | Var id when IdMap.mem id def ->
-      begin
-          let ty1 = IdMap.find id def in 
-          match ty1 with
-          | Prod (x, ty1', ty_res) ->
-              let _ = conversion syst def env ty1' ty2 in
-              let typ_res = subst x t2 ty_res in
-              let j = def, env, term, typ_res in
-              let _ = if !type_debug then 
-                Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
-              let _ = sub () in
-              typ_res, Application (tree1, tree2, j)
-          | t -> 
-              let _ = Printf.eprintf 
-                  "%s is defined as %a but a type product was expected"
-                  id
-                  pretty_printer t
-              in exit 1
-      end
-      | _ -> assert false
+      | _ -> 
+          let _ = Printf.printf "Fatal Error: %a is not an arrow type!\n"
+              pretty_printer ty1 in
+          exit 1
 
-and weaken syst def env term: term * typing_tree =
+and weaken (syst: system) (def: typing_def) (env: typing_env) term :
+  term * typing_tree =
   let _ = if !type_debug then 
     Printf.printf "%sApply Weakening\n" !ident in
   let y, typ_y = List.hd env in
@@ -179,7 +161,8 @@ and weaken syst def env term: term * typing_tree =
   let j = def, env, term, typ_res in
   typ_res, Weakening (y, tree1, tree2, j)
 
-and find_def syst def env typ tree: term * typing_tree =
+and find_def (syst: system) (def: typing_def) (env: typing_env) typ tree :
+  term * typing_tree =
   try 
     let _  = IdMap.iter
       (fun id term -> if (alpha_equiv def term typ) then raise (Def_found id))
@@ -196,7 +179,7 @@ and find_def syst def env typ tree: term * typing_tree =
       new_typ, Conversion (tree, typ, new_typ, tree2, j)
 
 
-and conversion syst def env t' t =
+and conversion (syst: system) (def: typing_def) (env: typing_env) t' t =
   let _ = if !type_debug then
     let _ = Printf.printf "%strying to convert : \n%s  %a\n%s  %a\n" 
       !ident 

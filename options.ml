@@ -8,6 +8,7 @@ and reduc_debug = ref false
 and get_proof   = ref false
 and verb_proof  = ref false
 and proof_file  = ref ""
+and get_metric  = ref false
 and color       = ref false
 
 
@@ -24,6 +25,9 @@ let spec =
       " Print the typing tree in a verbose mode" ;
    "--proof-file", Arg.Set_string proof_file,
       " Set the proof filename (default is filname.tex)"; 
+   "--get-metric", Arg.Set get_metric,
+      " prints some metrics such as the size of the proof and the number of
+      reduction steps";
    "--color", Arg.Set color, " Print in stdout in color"]
 
 let usage = "usage: main [option] file.f"

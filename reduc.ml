@@ -48,21 +48,24 @@ let rec subst x t = function
 
   (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
    reduction has been performed *)
-let rec beta_reduc = function
+let rec beta_reduc_def def term =
+  let rec aux = function
+  | Var id  when IdMap.mem id def -> 
+      IdMap.find id def, true
   | Var id -> Var id, false
   | Lam (id, t1, t2) ->
-      let t1', b1 = beta_reduc t1 in
+      let t1', b1 = aux t1 in
       if b1 then
         Lam (id, t1', t2), b1
       else
-        let t2', b2 = beta_reduc t2 in
+        let t2', b2 = aux t2 in
         Lam (id, t1, t2'), b2
   | Prod (id, t1, t2) ->
-      let t1', b1 = beta_reduc t1 in
+      let t1', b1 = aux t1 in
       if b1 then
         Prod (id, t1', t2), b1
       else
-        let t2', b2 = beta_reduc t2 in
+        let t2', b2 = aux t2 in
         Prod (id, t1, t2'), b2
    | Let (x, t1, t2) ->
        let _ = if !reduc_debug then
@@ -77,25 +80,30 @@ let rec beta_reduc = function
          Printf.printf "Pattern found : id = %s\n" x in
        subst x t t2, true
    | App (t1, t2) ->
-      let t1', b1 = beta_reduc t1 in
+      let t1', b1 = aux t1 in
       if b1 then
         App (t1', t2), b1
       else
-        let t2', b2 = beta_reduc t2 in
+        let t2', b2 = aux t2 in
         App (t1, t2'), b2
+   in aux term
+
+let beta_reduc = beta_reduc_def IdMap.empty
 
 let steps = ref 0
 
   (** [get_nf t] tries to compute the normal form of [t]. *i.e.*, it applies
    {!beta_reduc} as long as it returns [t', true] *)
-let rec get_nf t =
-  let t, b = beta_reduc t in
+let rec get_nf_def def t =
+  let t, b = beta_reduc_def def t in
   if b then
     let _ = incr steps in
     let _ = if !reduc_debug then
       Printf.printf "On continue...\n  %a\n" pretty_printer t in
-    get_nf t
+    get_nf_def def t
   else
     let _ = if !reduc_debug then
       Printf.printf "Forme normale atteinte en %i étapes\n" !steps in
     t
+
+let get_nf = get_nf_def IdMap.empty

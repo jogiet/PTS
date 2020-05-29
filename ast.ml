@@ -91,6 +91,19 @@ let rec get_fv = function
   | App (t1, t2) ->
       IdSet.union (get_fv t1) (get_fv t2)
 
+let rec proof_size = function
+  | Axiom _ -> 1
+  | Start (t, _) -> 1 + (proof_size t)
+  | Weakening (_, t1, t2, _)
+  | Product (t1, t2, _)
+  | Application (t1, t2, _)
+  | LetIntro (t1, t2, _) 
+  | Conversion (t1, _, _, t2, _) ->
+      1 + (proof_size t1) + (proof_size t2)
+  | Abstraction (t1, t2, t3, _) ->
+      1 + (proof_size t1) + (proof_size t2) + (proof_size t3)
+
+
 (** {5 Major PTS : the λ-cube} *)
 
 let sort = IdSet.of_list ["*"; "□ "]

@@ -31,9 +31,13 @@ let main x syst =
   let t, tree = type_check syst IdMap.empty [] x in
   let _ = if !get_proof then print_proof syst tree proof_file in
   let _ = Printf.printf "type = %a\n" pretty_printer t in
+  let _ = if !get_metric then
+    Printf.printf "proof_size = %i\n" (proof_size tree) in
   let _ = if !type_only then exit 0 in
   let x = get_nf x in
   let _ = Printf.printf "norm = %a\n" pretty_printer x in
+  let _ = if !get_metric then
+    Printf.printf "#reduction steps = %i\n" !steps in
   ()
 
 let _ =
