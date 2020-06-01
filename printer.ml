@@ -54,7 +54,7 @@ let pretty_printer latex fmt t =
           in_bind
           print_global t2
     | Prod (id, t1, t2) ->
-        if IdSet.mem id (get_fv t2) then
+        if IdSet.mem id (get_fv t2) || !Options.no_arrow then
           Printf.fprintf fmt "∀(%s:%a).%a"
             id
             print_atom t1
