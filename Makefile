@@ -17,8 +17,8 @@ doc: main
 	$(LTXMK) $<
 
 clean:
-	rm -rf _build/ *.exe doc/*.html doc/*.pdf *~
+	rm -rf _build/ *.exe doc/*.html doc/*.pdf *~ tests/*~
 
 realclean: clean
-	latexmk -c *.tex
-	rm -f *.pdf *.tex
+	latexmk -c tests/*.tex
+	rm -f *.pdf tests/*.tex
