@@ -45,14 +45,14 @@ atom_arrow :
     | v = var {v}
 
 abstraction :
-  | LAMBDA; LPAR ; i = ident; DDOT; t = application; RPAR ; DOT; l = application
-		{Lam (i, t, l)}
-  | LAMBDA; i = ident; DDOT; t = application; DOT; l = application
-		{Lam (i, t, l)}
-  | FORALL; LPAR ; i = ident; DDOT; t = application; RPAR ; DOT; l = application
-		{Prod (i, t, l)}
-  | FORALL; i = ident; DDOT; t = application; DOT; l = application
-		{Prod (i, t, l)}
+  | LAMBDA; LPAR ; li = ident+; DDOT; ty = application; RPAR ; DOT; t = application
+    {List.fold_right (fun i acc -> Lam (i, ty, acc)) li t }
+  | LAMBDA; li = ident+; DDOT; ty = application; DOT; t = application
+    {List.fold_right (fun i acc -> Lam (i, ty, acc)) li t }
+  | FORALL; LPAR ; li = ident+; DDOT; ty = application; RPAR ; DOT; t = application
+    {List.fold_right (fun i acc -> Prod (i, ty, acc)) li t }
+  | FORALL; li = ident+; DDOT; ty = application; DOT; t = application
+    {List.fold_right (fun i acc -> Prod (i, ty, acc)) li t }
   | LET; i = ident; EQUAL; d = application; IN; l = application
     {Let (i, d, l)}
   | l_arrow = separated_nonempty_list(ARROW, atom_arrow);
