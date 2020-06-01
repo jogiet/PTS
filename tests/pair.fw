@@ -4,4 +4,8 @@
 let pair = λ (α β : *). ∀ (γ : *). (α -> β -> γ) -> γ in
 let swap = λ (α β : *). λ (p: pair α β). λ (γ : *).
 		λ (f: β -> α -> γ). p γ (λ (x: α). λ (y: β). f y x) in
-λ α : *. λ x: α. x
+let nat = ∀ α : *. (α → α) -> α → α  in
+let bool = ∀ (α : *). α → α → α in
+let Z = λ (α: *). λ (f: α -> α). λ (x: α). x in
+let true = λ α: *. λ (x y : α). x in
+	swap nat bool (λ γ : *. λ f: nat -> bool -> γ. f Z true)
