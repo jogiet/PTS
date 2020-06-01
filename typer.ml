@@ -150,9 +150,9 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
 
 and weaken (syst: system) (def: typing_def) (env: typing_env) term :
   term * typing_tree =
-  let _ = if !type_debug then 
-    Printf.printf "%sApply Weakening\n" !ident in
   let y, typ_y = List.hd env in
+  let _ = if !type_debug then 
+    Printf.printf "%sApply Weakening: %s\n" !ident y in
   let new_env = List.tl env in
   let new_def = IdMap.remove y def in
   let typ_res , tree1 = type_check syst new_def new_env term in
