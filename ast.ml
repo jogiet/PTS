@@ -91,6 +91,15 @@ let rec get_fv = function
   | App (t1, t2) ->
       IdSet.union (get_fv t1) (get_fv t2)
 
+let rec is_free x = function
+  | Var id-> id = x
+  | Lam (id, t1, t2)
+  | Prod (id, t1, t2)
+  | Let (id, t1, t2) ->
+      id != x && (is_free x t1 || is_free x t2)
+  | App (t1, t2) ->
+      is_free x t1 || is_free x t2
+
 let rec proof_size = function
   | Axiom _ -> 1
   | Start (t, _) -> 1 + (proof_size t)

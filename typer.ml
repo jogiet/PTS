@@ -70,6 +70,8 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
     typ, Start (tree, j)
   end
   (* Weaken Rule *)
+  | t, (id, _)::_ when not ((is_free id t) || (IdMap.mem id def)) ->
+      weaken syst def env term
   | Var x, env ->
       weaken syst def env term
   | Lam (x, _, _), env
