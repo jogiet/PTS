@@ -121,7 +121,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
             let _ = if !type_debug then 
               Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
             let _ = sub () in
-            typ_res, Product (tree1, tree2, j)
+            find_def syst def env typ_res (Product (tree1, tree2, j))
           with
           | Not_found ->
               let err = Printf.sprintf "(%s, %s, _) ∉ ℛ " s1 s2 in
@@ -142,7 +142,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
           let _ = if !type_debug then 
             Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
           let _ = sub () in
-          typ_res, Application (tree1, tree2, j)
+          find_def syst def env typ_res (Application (tree1, tree2, j))
       | _ -> 
           let _ = Printf.printf "Fatal Error: %a is not an arrow type!\n"
               pretty_printer ty1 in
