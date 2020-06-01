@@ -24,5 +24,4 @@ TODO:
 
 - adding axioms (e.g. for λ0)
 - adding type annotations for *Let-bindings* (it should be optionnal)
-- Apllying conversion rules correctly
 

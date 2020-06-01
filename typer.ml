@@ -134,19 +134,23 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         Printf.printf "%sApply Application\n" !ident in
       let ty1, tree1 = type_check syst def env t1 in
       let ty2, tree2 = type_check syst def env t2 in
-      match get_nf_def def ty1 with
-      | Prod (x, ty1', ty_res) ->
-          let _ = conversion syst def env ty1' ty2 in
-          let typ_res = subst x t2 ty_res in
-          let j = def, env, term, typ_res in
-          let _ = if !type_debug then 
-            Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
-          let _ = sub () in
-          find_def syst def env typ_res (Application (tree1, tree2, j))
-      | _ -> 
+      let x, ty1', ty_res =
+        match ty1 with
+        | Prod (x, ty1', ty_res) -> x, ty1', ty_res
+        | _ -> match get_nf_def def ty1 with
+        | Prod (x, ty1', ty_res) -> x, ty1', ty_res
+        | _ -> 
           let _ = Printf.printf "Fatal Error: %a is not an arrow type!\n"
               pretty_printer ty1 in
           exit 1
+      in
+      let tree2 = conversion syst tree2 ty1' in
+      let typ_res = subst x t2 ty_res in
+      let j = def, env, term, typ_res in
+      let _ = if !type_debug then 
+        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+      let _ = sub () in
+      find_def syst def env typ_res (Application (tree1, tree2, j))
 
 and weaken (syst: system) (def: typing_def) (env: typing_env) term :
   term * typing_tree =
@@ -165,6 +169,9 @@ and weaken (syst: system) (def: typing_def) (env: typing_env) term :
 
 and find_def (syst: system) (def: typing_def) (env: typing_env) typ tree :
   term * typing_tree =
+  match typ with
+  | Var _ -> typ, tree
+  | _ ->
   try 
     let _  = IdMap.iter
       (fun id term -> if (alpha_equiv def term typ) then raise (Def_found id))
@@ -172,8 +179,9 @@ and find_def (syst: system) (def: typing_def) (env: typing_env) typ tree :
     typ, tree
   with
   | Def_found id ->
-      let _ = if !type_debug then Printf.printf "%sWe match %a ~α %s\n" !ident
-        pretty_printer typ id in
+      let _ = if !type_debug then
+        Printf.printf "%sWe match %a ~α %s\n" !ident
+          pretty_printer typ id in
       let new_typ = Var id in
       let def, env, term, typ = get_judgment tree in
       let j = def, env, term, new_typ in
@@ -181,22 +189,25 @@ and find_def (syst: system) (def: typing_def) (env: typing_env) typ tree :
       new_typ, Conversion (tree, typ, new_typ, tree2, j)
 
 
-and conversion (syst: system) (def: typing_def) (env: typing_env) t' t =
+and conversion (syst: system) tree new_typ =
+  let def, env, t, typ = get_judgment tree in
+  if typ = new_typ then tree else
   let _ = if !type_debug then
     let _ = Printf.printf "%strying to convert : \n%s  %a\n%s  %a\n" 
       !ident 
-      !ident pretty_printer t'
-      !ident pretty_printer t in
+      !ident pretty_printer typ
+      !ident pretty_printer new_typ in
     let _ = Printf.printf "%senv =%a\n" !ident print_typing_env env in
-    let _ = Printf.printf "%sApply Conversion\n" !ident in
-    let _ = type_check syst def env t' in   ()
-  in
-  let nf_t = get_nf t in
-  let nf_t' = get_nf t' in
-  if alpha_equiv def nf_t nf_t' then
+    let _ = Printf.printf "%sApply Conversion\n" !ident in 
     ()
+  in
+  let _, tree2 = type_check syst def env new_typ in
+  let nf_t = get_nf_def def typ in
+  let nf_t' = get_nf_def def new_typ in
+  if alpha_equiv def nf_t nf_t' then
+    Conversion (tree, typ, new_typ, tree2, (def, env, t, new_typ))
   else 
     let _ = Printf.printf "%a !~α %a\n"
-      pretty_printer t'
-      pretty_printer t in
+      pretty_printer typ
+      pretty_printer new_typ in
     failwith "Failure in conversion rule"
