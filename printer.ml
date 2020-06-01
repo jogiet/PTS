@@ -79,7 +79,7 @@ let pretty_printer = pretty_printer false
 
 let rec print_typing_def latex fmt def =
   if IdMap.is_empty def then () else
-    let _ = if latex then Printf.fprintf fmt "\\left\\{\\begin{array}{r@{\\,}l}" in
+    let _ = if latex then Printf.fprintf fmt "\\begin{array}{r@{\\,}l}" in
     let _ = IdMap.iter
       (fun id t -> 
         if latex then 
@@ -90,7 +90,7 @@ let rec print_typing_def latex fmt def =
             id pretty_printer t)
       def
     in
-    let _ = if latex then Printf.fprintf fmt "\\end{array}\\right\\|" in
+    let _ = if latex then Printf.fprintf fmt "\\end{array}" in
     ()
 
 let print_typing_def_latex = print_typing_def true
@@ -98,7 +98,7 @@ let print_typing_def = print_typing_def false
 
 let rec print_typing_env latex fmt env =
   if env = [] then () else
-    let _ = if latex then Printf.fprintf fmt "\\begin{array}{r@{\\,}l}" in
+    let _ = if latex then Printf.fprintf fmt "\\left\\|\\begin{array}{r@{\\,}l}" in
     let _ = List.iter
       (fun (id, t) -> 
         if latex then 
@@ -108,16 +108,20 @@ let rec print_typing_env latex fmt env =
           Printf.fprintf fmt "%s: %a;"
             id pretty_printer t)
       env in
-    let _ = if latex then Printf.fprintf fmt "\\end{array}" in
+    let _ = if latex then Printf.fprintf fmt "\\end{array}\\right." in
     ()
 
 let print_typing_env_latex = print_typing_env true
 let print_typing_env = print_typing_env false
 
 let print_typing_judgment fmt (def, env, t1, t2) =
-  Printf.fprintf fmt "%a%a ⊢ %a:%a"
+  let po, pf = if IdMap.is_empty def && env = [] then "", "" else
+    "\\left\\{", "\\right." in
+  Printf.fprintf fmt "%s%a%a%s ⊢ %a:%a"
+    po
     print_typing_def_latex def
     print_typing_env_latex env
+    pf
     pretty_printer_latex t1
     pretty_printer_latex t2
 
