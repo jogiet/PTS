@@ -2,6 +2,10 @@ open Ast
 open Printer
 open Options
 
+let new_id = 
+  let count = ref 0 in
+  fun id -> incr count; Printf.sprintf "%s_%i" id !count
+
   (** [alpha_equiv t t'] returns [true] iff [t] ~α [t'] *)
 let alpha_equiv def t t' = 
   let rec aux map t t' = 
@@ -24,27 +28,53 @@ let alpha_equiv def t t' =
     | Let (x, t1, t2), Let (x', t1', t2') ->
         let map' = IdMap.add x x' map in
         aux map t1 t1' && aux map' t2 t2'
+    | Cast (t', _), t -> aux map t' t
+    | t', Cast (t, _) -> aux map t' t
     | _, _ -> false
   in aux IdMap.empty t t'
 
   (** [subst x t t'] remplaces all free occurences of [x] by [t] in [t'] *)
-let rec subst x t = function
-  | Var id when id = x -> t
-  | Var id -> Var id
-  | Lam (id, t1, t2) when id = x ->
+let rec subst x t t' =
+  match t', t with
+  | Var id, _ when id = x -> t
+  | Var id, _ -> Var id
+  | Lam (id, t1, t2), _ when id = x ->
       Lam (id, subst x t t1, t2)
-  | Prod (id, t1, t2) when id = x ->
+  | Prod (id, t1, t2),_  when id = x ->
       Prod (id, subst x t t1, t2)
-  | Let (id, t1, t2) when id = x ->
+  | Let (id, t1, t2), _ when id = x ->
       Let (id, subst x t t1, t2)
-  | Lam (id, t1, t2) ->
+  | Lam (id, t1, t2), Var id' when id = id' ->
+      let nid = new_id id in
+      let t2 = t2
+        |> subst id (Var nid)
+        |> subst x t
+      in
+      Lam (nid, subst x t t1, t2)
+  | Prod (id, t1, t2), Var id' when id = id' ->
+      let nid = new_id id in
+      let t2 = t2
+        |> subst id (Var nid)
+        |> subst x t
+      in
+      Prod (nid, subst x t t1, t2)
+  | Let (id, t1, t2), Var id' when id = id' ->
+      let nid = new_id id in
+      let t2 = t2 
+        |> subst id (Var nid)
+        |> subst x t
+      in
+      Let (nid, subst x t t1, t2)
+  | Lam (id, t1, t2), _ ->
       Lam (id, subst x t t1, subst x t t2)
-  | Prod (id, t1, t2) ->
+  | Prod (id, t1, t2), _ ->
       Prod (id, subst x t t1, subst x t t2)
-  | Let (id, t1, t2) ->
+  | Let (id, t1, t2), _ ->
       Let (id, subst x t t1, subst x t t2)
-  | App (t1, t2) -> 
+  | App (t1, t2), _ -> 
       App (subst x t t1, subst x t t2)
+  | Cast (t1, new_typ), _ ->
+      Cast (subst x t t1, subst x t new_typ)
 
   (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
    reduction has been performed *)
@@ -86,6 +116,7 @@ let rec beta_reduc_def def term =
       else
         let t2', b2 = aux t2 in
         App (t1, t2'), b2
+   | Cast (t, _) -> t, true
    in aux term
 
 let beta_reduc = beta_reduc_def IdMap.empty

@@ -31,6 +31,7 @@ type term =
   | Prod of (ident * term * term)   
   (** Product abstraction : [Prod (x, A, B)] : ∀(x: A). B *)
   | Let of (ident * term * term)
+  | Cast of (term * term)
 
   (** We assume that a system is functionnal *)
 type system = 
@@ -88,7 +89,8 @@ let rec get_fv = function
   | Let (id, t1, t2) ->
       let set = IdSet.union (get_fv t1) (get_fv t2) in
       IdSet.remove id set
-  | App (t1, t2) ->
+  | App (t1, t2) 
+  | Cast (t1, t2) ->
       IdSet.union (get_fv t1) (get_fv t2)
 
 let rec is_free x = function
@@ -97,7 +99,8 @@ let rec is_free x = function
   | Prod (id, t1, t2)
   | Let (id, t1, t2) ->
       id != x && (is_free x t1 || is_free x t2)
-  | App (t1, t2) ->
+  | App (t1, t2)
+  | Cast (t1, t2) ->
       is_free x t1 || is_free x t2
 
 let rec proof_size = function

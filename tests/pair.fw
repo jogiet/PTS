@@ -2,7 +2,8 @@
 -- explicitly write type constructor "pair", we need to have functions from type
 -- to type.
 let pair = λ (α β : *). ∀ (γ : *). (α -> β -> γ) -> γ in
-let swap = λ (α β : *). λ (p: pair α β). λ (γ : *).
+let swap : ∀ (α β : *). (pair α β) -> (pair β α) =
+	λ (α β : *). λ (p: pair α β). λ (γ : *).
 		λ (f: β -> α -> γ). p γ (λ (x: α). λ (y: β). f y x) in
 let nat = ∀ α : *. (α → α) -> α → α  in
 let bool = ∀ (α : *). α → α → α in

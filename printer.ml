@@ -12,7 +12,7 @@ let pretty_printer latex fmt t =
         print_atom t2
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ | Let _ -> 
+    | Lam _ | Prod _ | Let _ | Cast _ -> 
         Printf.fprintf fmt "(%a)"
         print_atom t
   and print_app_par fmt t =
@@ -29,7 +29,7 @@ let pretty_printer latex fmt t =
         print_atom t2
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ | Let _ -> 
+    | Lam _ | Prod _ | Let _ | Cast _ -> 
         Printf.fprintf fmt "(%a)"
         print_atom t
   and print_atom fmt t = 
@@ -43,6 +43,20 @@ let pretty_printer latex fmt t =
         Printf.fprintf fmt "λ(%s:%a).%a"
           id
           print_atom t1
+          print_global t2
+    | Cast (t1, t2) ->
+        Printf.fprintf fmt "%a : %a" 
+          print_global t1
+          print_global t2
+    | Let (id, Cast (t1, new_typ), t2) ->
+        let let_bind = if latex then "\\texttt{ let }" else "let" in
+        let in_bind = if latex then "\\texttt{ in }" else "in" in
+        Printf.fprintf fmt "%s %s : %a = %a %s %a"
+          let_bind 
+          id
+          print_atom new_typ
+          print_atom t1
+          in_bind
           print_global t2
     | Let (id, t1, t2) ->
         let let_bind = if latex then "\\texttt{ let }" else "let" in
@@ -61,13 +75,26 @@ let pretty_printer latex fmt t =
             print_global t2
         else
           Printf.fprintf fmt "%a → %a"
-            print_app t1
-            print_atom t2
+            print_left_arrow t1
+            print_right_arrow t2
+  and print_left_arrow fmt t =
+    match t with
+    | Var id -> Printf.fprintf fmt "%s" id
+    | _ -> 
+        Printf.fprintf fmt "(%a)"
+          print_global t
+  and print_right_arrow fmt t =
+    match t with
+    | Prod (id, t1, t2) when not @@ is_free id t2 ->
+        Printf.fprintf fmt "%a → %a"
+          print_left_arrow t1
+          print_right_arrow t2
+    | _ -> print_left_arrow fmt t
   and print_global fmt t =
     match t with
     | Var id ->
         Printf.fprintf fmt "%s" id
-    | Lam _ | Prod _ | Let _ ->
+    | Lam _ | Prod _ | Let _ | Cast _ ->
         print_atom fmt t
     | App _ ->
         print_app fmt t

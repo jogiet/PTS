@@ -55,6 +55,8 @@ abstraction :
     {List.fold_right (fun i acc -> Prod (i, ty, acc)) li t }
   | LET; i = ident; EQUAL; d = application; IN; l = application
     {Let (i, d, l)}
+  | LET; i = ident; DDOT; typ = application EQUAL; d = application; IN; l = application
+    {Let (i, Cast (d, typ), l)}
   | l_arrow = separated_nonempty_list(ARROW, atom_arrow);
     { let rec aux = function
       | [] -> assert false

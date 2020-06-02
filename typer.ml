@@ -78,6 +78,9 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
   | Let (x, _, _), env 
   | Prod (x, _, _), env when (List.mem_assoc x env) ->
       weaken syst def env term
+  | Cast (t, new_typ), env ->
+      let _, tree = type_check syst def env t in
+      new_typ, conversion syst tree new_typ 
   | Lam (x, t1, t2), env ->
       let _ = if !type_debug then 
         Printf.printf "%sApply abstraction\n" !ident in
@@ -207,7 +210,10 @@ and conversion (syst: system) tree new_typ =
   if alpha_equiv def nf_t nf_t' then
     Conversion (tree, typ, new_typ, tree2, (def, env, t, new_typ))
   else 
-    let _ = Printf.printf "%a !~α %a\n"
+    let _ = Printf.printf "%a !~α %a\nnf = %a\nnf = %a\n"
       pretty_printer typ
-      pretty_printer new_typ in
+      pretty_printer new_typ
+      pretty_printer nf_t
+      pretty_printer nf_t'
+    in
     failwith "Failure in conversion rule"
