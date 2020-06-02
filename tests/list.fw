@@ -1,0 +1,12 @@
+let list = λ(α: *). ∀ (γ : *). γ -> (α -> γ -> γ) -> γ in
+
+let Nil : ∀ α : *. list α =
+	λ(α γ : *). λ(x_γ: γ). λ(f: α -> γ -> γ). x_γ in
+
+let Cons : ∀ α : *. α -> (list α) -> (list α) =
+	λ α: *. λ x_α: α. λ l_α: list α. 
+		λ γ : *. λ x_γ : γ. λ f: α -> γ -> γ. f x_α (l_α γ x_γ f) in
+
+let bool = ∀ α : *. α -> α -> α in
+let true: bool = λ (α : *). λ(x y: α). x in
+	Cons bool true (Nil bool)
