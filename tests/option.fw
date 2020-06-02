@@ -1,0 +1,19 @@
+let option = λ α : *. ∀ (γ : *). γ -> (α -> γ) -> γ in
+
+let None : ∀ (α : *). option α =
+	λ(α γ : *). λ(x: γ).λ(f: α -> γ). x in
+
+let Some : ∀ (α : *). α -> (option α) =
+	λ(α : *). λ(x_α: α). λ(γ : *).λ(x_γ : γ).λ(f: α -> γ). f x_α in
+
+let map : ∀ α β : *. (α -> β) -> (option α) -> (option β) =
+	λ α β : *. λ f_m: α -> β. λ opt_α : option α.
+		λ γ: *. λ x: γ. λ f: β -> γ. opt_α γ x (λ t: α. f (f_m t)) in
+
+let nat = ∀ α : *. (α -> α) -> α -> α in
+let Z : nat = λ α : *. λ f: α -> α. λ x: α. x in
+let S : nat -> nat = 
+	λ(n: nat). λ(α : *). λ(f: α -> α). λ (x: α). n α f (f x) in
+
+let opt_Z : option nat = Some nat Z in
+	map nat nat S opt_Z
