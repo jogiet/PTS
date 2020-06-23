@@ -1,5 +1,7 @@
 open Ast
 
+let new_row = "\\\\\n\\\\\n\\\\\n"
+
   (** [pretty_printer fmt t] outputs a pretty-printed in [fmt] *)
 let pretty_printer latex fmt t =
   let space = if latex then "\\ " else " " in
@@ -193,7 +195,7 @@ let print_typing_syst latex fmt (syst: system) =
 let print_typing_syst_latex = print_typing_syst true
 let print_typing_syst = print_typing_syst false
 
-let rec print_typing_tree offset fmt (tree: typing_tree) =
+let rec print_typing_tree offset let_bind fmt tree =
   match tree with
   | Ast.Axiom j -> 
       let _, _, t, ty = j in
@@ -204,65 +206,77 @@ let rec print_typing_tree offset fmt (tree: typing_tree) =
         offset rule
         offset print_typing_judgment j
   | Ast.Weakening (id, tree1, tree2, j) ->
-      let rule = Printf.sprintf "\\RightLabel{Weak %s}" id in
+      let rule = Printf.sprintf "\\RightLabel{Weak $%s$}" id in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Start (tree, j) ->
       let rule = "\\RightLabel{Start}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%s%s\n%s\\UIC{$%a$}\n"
-        (print_typing_tree new_offset) tree
+        (print_typing_tree new_offset let_bind) tree
         offset rule
         offset print_typing_judgment j
   | Ast.Product (tree1, tree2, j) ->
       let rule = "\\RightLabel{$∀$}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Abstraction (tree1, tree2, tree3, j) -> 
       let rule = "\\RightLabel{$λ$}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%a%s%s\n%s\\TIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
-        (print_typing_tree new_offset) tree3
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
+        (print_typing_tree new_offset let_bind) tree3
+        offset rule
+        offset print_typing_judgment j
+  | Ast.LetIntro (tree1, tree2, j) when let_bind ->
+      let _, _, term, _ = j in
+      let ident = match term with
+        | Let (id, _, _) -> id
+        | _ -> assert false in
+      let rule = "\\RightLabel{$Let$}" in
+      let new_offset = "  "^offset in
+      Printf.fprintf fmt "%s\\AXC{\\Huge %s}\n%a%s%s\n%s\\BIC{$%a$}\n"
+        new_offset ident
+        (print_typing_tree new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.LetIntro (tree1, tree2, j) ->
       let rule = "\\RightLabel{Let}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Application (tree1, tree2, j) ->
       let rule = "\\RightLabel{App}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Conversion (tree1, t1, t2, tree2, j) ->
       let rule = "\\RightLabel{Conv}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s\\AXC{$%a \\sim_{αβ} %a$}\n%s%s\n%s\\TIC{$%a$}\n"
-        (print_typing_tree new_offset) tree1
-        (print_typing_tree new_offset) tree2
+        (print_typing_tree new_offset let_bind) tree1
+        (print_typing_tree new_offset let_bind) tree2
         new_offset pretty_printer_latex t1 pretty_printer_latex t2
         offset rule
         offset print_typing_judgment j
 
 
-let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
+let rec print_typing_tree_sparse offset let_bind fmt tree =
   match tree with
   | Ast.Axiom j -> 
       let _, _, t, ty = j in
@@ -275,7 +289,7 @@ let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
   | Ast.Weakening (id, tree1, tree2, j) ->
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a"
-        (print_typing_tree_sparse new_offset) tree1
+        (print_typing_tree_sparse new_offset let_bind) tree1
   | Ast.Start (tree, j) ->
       let rule = "\\RightLabel{Start}" in
       Printf.fprintf fmt "%s\\AXC{}\n%s%s\n%s\\UIC{$%a$}\n"
@@ -286,40 +300,86 @@ let rec print_typing_tree_sparse offset fmt (tree: typing_tree) =
       let rule = "\\RightLabel{$∀$}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%s%s\n%s\\UIC{$%a$}\n"
-        (print_typing_tree_sparse new_offset) tree2
+        (print_typing_tree_sparse new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Abstraction (tree1, tree2, tree3, j) -> 
       let rule = "\\RightLabel{$λ$}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%s%s\n%s\\UIC{$%a$}\n"
-        (print_typing_tree_sparse new_offset) tree2
+        (print_typing_tree_sparse new_offset let_bind) tree2
+        offset rule
+        offset print_typing_judgment j
+  | Ast.LetIntro (tree1, tree2, j) when let_bind ->
+      let _, _, term, _ = j in
+      let ident = match term with
+        | Let (id, _, _) -> id
+        | _ -> assert false in
+      let rule = "\\RightLabel{$Let$}" in
+      let new_offset = "  "^offset in
+      Printf.fprintf fmt "%s\\AXC{\\Huge %s}\n%a%s%s\n%s\\BIC{$%a$}\n"
+        new_offset ident
+        (print_typing_tree_sparse new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.LetIntro (tree1, tree2, j) ->
       let rule = "\\RightLabel{$Let$}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree_sparse new_offset) tree1
-        (print_typing_tree_sparse new_offset) tree2
+        (print_typing_tree_sparse new_offset let_bind) tree1
+        (print_typing_tree_sparse new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Application (tree1, tree2, j) ->
       let rule = "\\RightLabel{App}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a%a%s%s\n%s\\BIC{$%a$}\n"
-        (print_typing_tree_sparse new_offset) tree1
-        (print_typing_tree_sparse new_offset) tree2
+        (print_typing_tree_sparse new_offset let_bind) tree1
+        (print_typing_tree_sparse new_offset let_bind) tree2
         offset rule
         offset print_typing_judgment j
   | Ast.Conversion (tree1, t1, t2, tree2, j) ->
       let rule = "\\RightLabel{Conv}" in
       let new_offset = "  "^offset in
       Printf.fprintf fmt "%a\n%s%s\n%s\\UIC{$%a$}\n"
-        (print_typing_tree_sparse new_offset) tree1
+        (print_typing_tree_sparse new_offset let_bind) tree1
         offset rule
         offset print_typing_judgment j
 
+let rec print_let sparse fmt tree =
+  match tree with
+  | LetIntro (tree1, tree2, j) ->
+      let _ = print_let sparse fmt tree1 in
+      let _, _, term, _ = j in
+      let ident = match term with
+        | Let (id, _, _) -> id
+        | _ -> assert false in
+      Printf.fprintf fmt "%a\n  \\UIC{\\Huge %s}\n\\DisplayProof\n%s"
+        (if sparse
+          then print_typing_tree_sparse "  " true
+          else print_typing_tree "  " true)
+        tree1
+        ident
+        new_row;
+      print_let sparse fmt tree2
+  | Axiom _ -> ()
+  | Start (tree, _) -> print_let sparse fmt tree
+  | Conversion (tree1, _, _, tree2, _)
+  | Application (tree1, tree2, _)
+  | Product (tree1, tree2, _)
+  | Weakening (_, tree1, tree2, _) ->
+      print_let sparse fmt tree1;      
+      print_let sparse fmt tree2
+  | Abstraction (tree1, tree2, tree3, _) ->
+      print_let sparse fmt tree1;      
+      print_let sparse fmt tree2;
+      print_let sparse fmt tree3
+
+let print_let sparse let_bind fmt tree =
+  if let_bind then
+    print_let sparse fmt tree
+  else
+    ()
 
 
 let print_proof syst tree file =
@@ -338,14 +398,17 @@ let print_proof syst tree file =
 \\end{document}"
   in 
   let chan = open_out file in
+  let let_bind = !Options.short_let in
   let printer = if !Options.verb_proof  then
-    print_typing_tree "  "
+    print_typing_tree "  " let_bind
   else
-    print_typing_tree_sparse "  "
+    print_typing_tree_sparse "  " let_bind 
   in
-  let _ = Printf.fprintf chan "%s\n\n%a\n\\\\ \n\\\\\ \n\n%a\n\n%s"
+  let _ = Printf.fprintf chan "%s\n\n%a\n%s%a\n\n%a\n\n%s"
     header
     print_typing_syst_latex syst
+    new_row
+    (print_let (not !Options.verb_proof) let_bind) tree 
     printer tree
     footer in
   let _ = close_out chan in

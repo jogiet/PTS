@@ -7,6 +7,7 @@ and type_debug  = ref false
 and reduc_debug = ref false
 and get_proof   = ref false
 and verb_proof  = ref false
+and short_let   = ref false
 and proof_file  = ref ""
 and get_metric  = ref false
 and color       = ref false
@@ -24,6 +25,8 @@ let spec =
       " Print the typing tree in a tex file" ;
    "--verb-proof", Arg.Set verb_proof,
       " Print the typing tree in a verbose mode" ;
+   "--short-let", Arg.Set short_let,
+      " Print the typing tree of arguments of let-bindings in a separate tree" ;
    "--proof-file", Arg.Set_string proof_file,
       " Set the proof filename (default is filname.tex)"; 
    "--get-metric", Arg.Set get_metric,
