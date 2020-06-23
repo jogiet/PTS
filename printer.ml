@@ -113,7 +113,7 @@ let rec print_typing_def latex fmt def =
           Printf.fprintf fmt "%s&:= %a\\\\"
             id pretty_printer_latex t
         else
-          Printf.fprintf fmt "%s := %a;"
+          Printf.fprintf fmt "%s := %a; "
             id pretty_printer t)
       def
     in
