@@ -58,7 +58,8 @@ let digit = ['0'-'9']
 (* Works only for utf-8 unicode ! *)
 let greek = ('\xce'['\x91'-'\xbf']) | ('\xcf'['\x80'-'\x89'])
 
-let ident = (var|digit|greek|'_')+
+let alpha_num = (var|digit|greek)
+let ident = alpha_num(alpha_num|'_')*
 let escaped = '\x5c' ident
 
 let space = ' '|'\t'
