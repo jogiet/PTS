@@ -48,7 +48,7 @@
     | "chi"       -> IDENT "χ"
     | "psi"       -> IDENT "ψ"
     | "omega"     -> IDENT "ω"
-    | "P" | "forall" -> FORALL
+    | "P" | "Pi" | "forall" -> FORALL
     | _ -> raise (Lexing_error ("Illegal escaped sequence : "^s))
     
 }

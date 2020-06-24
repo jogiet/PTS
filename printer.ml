@@ -244,7 +244,7 @@ let rec print_typing_tree offset let_bind fmt tree =
         | _ -> assert false in
       let rule = "\\RightLabel{$Let$}" in
       let new_offset = "  "^offset in
-      Printf.fprintf fmt "%s\\AXC{\\Huge %s}\n%a%s%s\n%s\\BIC{$%a$}\n"
+      Printf.fprintf fmt "%s\\AXC{\\Huge $%s$}\n%a%s%s\n%s\\BIC{$%a$}\n"
         new_offset ident
         (print_typing_tree new_offset let_bind) tree2
         offset rule
@@ -317,7 +317,7 @@ let rec print_typing_tree_sparse offset let_bind fmt tree =
         | _ -> assert false in
       let rule = "\\RightLabel{$Let$}" in
       let new_offset = "  "^offset in
-      Printf.fprintf fmt "%s\\AXC{\\Huge %s}\n%a%s%s\n%s\\BIC{$%a$}\n"
+      Printf.fprintf fmt "%s\\AXC{\\Huge $%s$}\n%a%s%s\n%s\\BIC{$%a$}\n"
         new_offset ident
         (print_typing_tree_sparse new_offset let_bind) tree2
         offset rule
@@ -354,7 +354,7 @@ let rec print_let sparse fmt tree =
       let ident = match term with
         | Let (id, _, _) -> id
         | _ -> assert false in
-      Printf.fprintf fmt "%a\n  \\UIC{\\Huge %s}\n\\DisplayProof\n%s"
+      Printf.fprintf fmt "%a\n  \\UIC{\\Huge $%s$}\n\\DisplayProof\n%s"
         (if sparse
           then print_typing_tree_sparse "  " true
           else print_typing_tree "  " true)
