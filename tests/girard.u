@@ -1,0 +1,50 @@
+
+let false = \Pi (\phi: *). \phi in
+
+let neg = \l \phi: *. \phi -> false in
+
+let U = \Pi \chi : [].(((\chi -> *) -> *) -> \chi) -> ((\chi -> *) -> *) in
+
+let PU = (U -> *) in
+
+let PPU = ((U -> *) -> *) in 
+
+let \tau = 
+  \l (t : PPU). 
+    \l \chi : []. 
+      \l f : ((\chi -> *) -> *) -> \chi.
+        \l p : (\chi -> *).
+          t \l x: U. (p (f (x \chi f))) in
+
+let \sigma = 
+  \l s: U.
+    s U \l t: PPU. \tau t in
+
+let \delta = 
+  \l y: U. neg \forall p: PU. (\sigma y p) -> (p (\tau (\sigma y))) in
+
+let \omega = 
+  \tau \l p: PU. \forall x: U. (\sigma x p) -> (p x) in
+
+(\l 0: \forall p: PU. \forall x: U.( ((\sigma x p) -> (p x)) -> (p \omega)).
+  (
+    (
+      (0 \delta)
+      \l x: U. 
+        \l 2: \sigma x \delta.
+          \l 3: \forall p: PU. ( (\sigma x p) -> (p(\tau (\sigma x))) ).
+            (
+              ( (3 \delta) 2 ) 
+              \l p: PU. (3 \l y: U. p (\tau (\sigma y) ))
+            )
+    )
+    \l p: PU. (0 \l y: U. (p (\tau (\sigma y))) ) 
+  )
+  \l p: PU.
+    \l 1: \forall x: U. ( ((\sigma x) p) -> (p x) ).
+      (
+        (1 \omega)
+        \l x: U. (1 (\tau (\sigma )))
+      )
+)
+          
