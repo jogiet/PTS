@@ -77,7 +77,10 @@ rule next_tokens = parse
   | "∀" {FORALL}
   | "->" {ARROW}
   | "→"  {ARROW}
-  | "□" {IDENT "□"} 
+  | "□"  {IDENT "□ "} 
+  | "[]" {IDENT "□ "} 
+  | "△"  {IDENT "△ "}
+  | "/\\"  {IDENT "△ "}
 	| ident as s {find_keyword s}
   | escaped as s {handle_escaped s}
 	|'\n' {newline lexbuf; next_tokens lexbuf}

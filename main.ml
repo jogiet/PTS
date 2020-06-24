@@ -19,7 +19,10 @@ let syst_of_filename file =
   | ".f" -> syst_f
   | ".fw" -> syst_fw
   | ".cc" -> cc
-  | ext -> 
+  | ".u" ->
+      Printf.printf "/!\\ You're using an inconsistent logic system\n";
+      syst_U
+  | ext ->
       Printf.printf 
         "Error: %s is not valid extension without type system\n"
         ext;

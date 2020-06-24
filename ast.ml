@@ -139,3 +139,24 @@ let cc =
   { stlc with
     rules = r_cc }
 
+(** {5 Some paradoxal PTS} *)
+
+let lamb_star =
+  { sorts = IdSet.singleton "*";
+    axioms = IdMap.singleton "*" "*";
+    rules = Id2Map.singleton ("*", "*") "*" }
+
+let sortU = IdSet.add "△ " sort
+let axiomsU = IdMap.add "□ " "△ " axioms
+let r_U_minus = Id2Map.add ("△ ", "□ ") "□ " r_fw
+let r_U = Id2Map.add ("△ ", "*") "*" r_U_minus
+
+let syst_U_minus =
+  { sorts  = sortU     ; 
+    axioms = axiomsU   ;
+    rules  = r_U_minus }
+
+let syst_U =
+  { sorts  = sortU   ; 
+    axioms = axiomsU ;
+    rules  = r_U     }
