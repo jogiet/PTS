@@ -17,11 +17,11 @@ Supported extension :
 - `.f` for System F (simply-typed λ-calulus with polymorphism)
 - `.fw` for System Fω (System F with type constructor)
 - `.cc` for the Calculus of Constructions
+- `.u` for the System U (beware that it's an inconsistent system)
 
 Type `./pts.exe -help` to see the list of options.
 
 TODO:
 
 - adding axioms (e.g. for λ0)
-- adding type annotations for *Let-bindings* (it should be optionnal)
 
