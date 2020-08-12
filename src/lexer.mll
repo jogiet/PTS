@@ -81,6 +81,7 @@ rule next_tokens = parse
   | "[]" {IDENT "□ "} 
   | "△"  {IDENT "△ "}
   | "/\\"  {IDENT "△ "}
+  | '\x5c' {LAMBDA}
 	| ident as s {find_keyword s}
   | escaped as s {handle_escaped s}
 	|'\n' {newline lexbuf; next_tokens lexbuf}
