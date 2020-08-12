@@ -2,6 +2,7 @@
 *.pdf
 *~
 _build/*
+*.merlin
 *.swp
 *.exe
 *.tex

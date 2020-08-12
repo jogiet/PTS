@@ -14,7 +14,7 @@ let sub () = ident := String.(sub !ident 0 (length !ident -3))
 
 let subst x t t' = 
   let res = subst x t t' in
-  let _ = if !type_debug then Printf.printf "%s%a{%s ← %a} = %a\n"
+  let _ = if !type_debug then Format.printf "%s%a{%s ← %a} = %a\n"
     !ident
     pretty_printer t'
     x
@@ -35,13 +35,13 @@ exception Def_found of ident
 let rec type_check (syst: system) (def: typing_def) (env: typing_env) term : 
   term * typing_tree option  =
   let _ = if !type_debug then
-    Printf.printf "%s|->trying to type : %a\n" 
+    Format.printf "%s|->trying to type : %a\n" 
       !ident pretty_printer term in
   let _ = add () in
   let _ = if !type_debug then
-    let _ = Printf.printf "%senv = %a\n" 
+    let _ = Format.printf "%senv = %a\n" 
       !ident print_typing_env env in
-    let _ = Printf.printf "%sdef = %a\n" 
+    let _ = Format.printf "%sdef = %a\n" 
       !ident print_typing_def def 
     in ()
   in
@@ -50,8 +50,8 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
   | Var s, [] ->
   begin
     let _ = if not (is_sort syst s) then
-      Printf.printf "Error : %s ∉ Γ\n" s in
-    let _ = if !type_debug then Printf.printf "%sApply Axiom\n" !ident in
+      Format.printf "Error : %s ∉ Γ\n" s in
+    let _ = if !type_debug then Format.printf "%sApply Axiom\n" !ident in
       try 
         let s' = IdMap.find s syst.axioms in
         let j = if !Options.get_proof 
@@ -59,17 +59,17 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
           else None
         in
         let _ = if !type_debug then 
-          Printf.printf "%sτ = %a\n" !ident pretty_printer (Var s') in
+          Format.printf "%sτ = %a\n" !ident pretty_printer (Var s') in
         let _ = sub () in
         Var s', j
       with Not_found ->
-        let err = Printf.sprintf "(%s, _) ∉ 𝒜 " s in
+        let err = Format.sprintf "(%s, _) ∉ 𝒜 " s in
         failwith err
   end
   (* Start Rule *)
   | Var x, (y, typ)::new_env when x = y ->
   begin
-    let _ = if !type_debug then Printf.printf "%sApply Start\n" !ident in
+    let _ = if !type_debug then Format.printf "%sApply Start\n" !ident in
     let new_def = IdMap.remove y def in
     let _, tree = type_check syst new_def new_env typ in
     let proof = 
@@ -77,14 +77,14 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
       let* tree = tree in
       return (Start (tree, j)) in
     let _ = if !type_debug then 
-      Printf.printf "%sτ = %a\n" !ident pretty_printer typ in
+      Format.printf "%sτ = %a\n" !ident pretty_printer typ in
     let _ = sub () in
     typ, proof
   end
   (* Weaken Rule *)
   | t, (id, _)::_ when not ((is_free id t) || (IdMap.mem id def)) ->
       weaken syst def env term
-  | Var x, env ->
+  | Var _, env ->
       weaken syst def env term
   | Lam (x, _, _), env
   | Let (x, _, _), env 
@@ -95,7 +95,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
       new_typ, conversion syst def env t typ_res tree new_typ 
   | Lam (x, t1, t2), env ->
       let _ = if !type_debug then 
-        Printf.printf "%sApply abstraction\n" !ident in
+        Format.printf "%sApply abstraction\n" !ident in
       let _ = assert (not (is_sort syst x)) in
       let _, tree1 = type_check syst def env t1 in
       let new_env = (x, t1) :: env in
@@ -109,12 +109,12 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         let j = def, env, term, typ_res in
         return (Abstraction (tree1, tree2, tree3, j)) in
       let _ = if !type_debug then 
-        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+        Format.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
       find_def syst def env term typ_res proof
   | Let (id, d, t), env ->
       let _ = if !type_debug then 
-        Printf.printf "%sApply Let\n" !ident in
+        Format.printf "%sApply Let\n" !ident in
       let tyd, tree1 = type_check syst def env d in
       let new_def = IdMap.add id d def in
       let new_env = (id, tyd)::env in
@@ -125,12 +125,12 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         let j = def, env, term, typ_res in
         return (LetIntro (tree1, tree2, j)) in
       let _ = if !type_debug then 
-        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+        Format.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
       typ_res, proof
   | Prod (x, t1, t2), env ->
   begin
-      let _ = if !type_debug then Printf.printf "%sApply Product\n" !ident in
+      let _ = if !type_debug then Format.printf "%sApply Product\n" !ident in
       let _ = assert (not (is_sort syst x)) in
       let s1, tree1 = type_check syst def env t1 in
       let new_env = (x, t1) :: env in
@@ -147,19 +147,19 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
               let j = def, env, term, typ_res in
               return (Product (tree1, tree2, j)) in
             let _ = if !type_debug then 
-              Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+              Format.printf "%sτ = %a\n" !ident pretty_printer typ_res in
             let _ = sub () in
             find_def syst def env term typ_res proof
           with
           | Not_found ->
-              let err = Printf.sprintf "(%s, %s, _) ∉ ℛ " s1 s2 in
+              let err = Format.sprintf "(%s, %s, _) ∉ ℛ " s1 s2 in
               failwith err
       end
       | _ -> assert false
   end
   | App (t1, t2), env ->
       let _ = if !type_debug then 
-        Printf.printf "%sApply Application\n" !ident in
+        Format.printf "%sApply Application\n" !ident in
       let ty1, tree1 = type_check syst def env t1 in
       let ty2, tree2 = type_check syst def env t2 in
       let x, ty1', ty_res =
@@ -168,7 +168,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         | _ -> match get_nf_def def ty1 with
         | Prod (x, ty1', ty_res) -> x, ty1', ty_res
         | _ -> 
-          let _ = Printf.printf "Fatal Error: %a is not an arrow type!\n"
+          let _ = Format.printf "Fatal Error: %a is not an arrow type!\n"
               pretty_printer ty1 in
           exit 1
       in
@@ -180,7 +180,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         let j = def, env, term, typ_res in
         return (Application (tree1, tree2, j)) in
       let _ = if !type_debug then 
-        Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+        Format.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
       find_def syst def env term typ_res proof
 
@@ -188,13 +188,13 @@ and weaken (syst: system) (def: typing_def) (env: typing_env) term :
   term * typing_tree option =
   let y, typ_y = List.hd env in
   let _ = if !type_debug then 
-    Printf.printf "%sApply Weakening: %s\n" !ident y in
+    Format.printf "%sApply Weakening: %s\n" !ident y in
   let new_env = List.tl env in
   let new_def = IdMap.remove y def in
   let typ_res , tree1 = type_check syst new_def new_env term in
   let _ , tree2 = type_check syst new_def new_env typ_y in
   let _ = if !type_debug then 
-    Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
+    Format.printf "%sτ = %a\n" !ident pretty_printer typ_res in
   let _ = sub () in
   let proof = 
     let* tree1 = tree1 in
@@ -216,7 +216,7 @@ and find_def (syst: system) (def: typing_def) (env: typing_env) term typ tree :
   with
   | Def_found id ->
       let _ = if !type_debug then
-        Printf.printf "%sWe match %a ~α %s\n" !ident
+        Format.printf "%sWe match %a ~α %s\n" !ident
           pretty_printer typ id in
       let new_typ = Var id in
       let proof =
@@ -230,12 +230,12 @@ and find_def (syst: system) (def: typing_def) (env: typing_env) term typ tree :
 and conversion (syst: system) def env t typ tree new_typ =
   if typ = new_typ then tree else
   let _ = if !type_debug then
-    let _ = Printf.printf "%strying to convert : \n%s  %a\n%s  %a\n" 
+    let _ = Format.printf "%strying to convert : \n%s  %a\n%s  %a\n" 
       !ident 
       !ident pretty_printer typ
       !ident pretty_printer new_typ in
-    let _ = Printf.printf "%senv =%a\n" !ident print_typing_env env in
-    let _ = Printf.printf "%sApply Conversion\n" !ident in 
+    let _ = Format.printf "%senv =%a\n" !ident print_typing_env env in
+    let _ = Format.printf "%sApply Conversion\n" !ident in 
     ()
   in
   let _, tree2 = type_check syst def env new_typ in
@@ -247,7 +247,7 @@ and conversion (syst: system) def env t typ tree new_typ =
     let j = (def, env, t, new_typ) in
     return (Conversion (tree, typ, new_typ, tree2, j))
   else 
-    let _ = Printf.printf "%a !~α %a\nnf = %a\nnf = %a\n"
+    let _ = Format.printf "%a !~α %a\nnf = %a\nnf = %a\n"
       pretty_printer typ
       pretty_printer new_typ
       pretty_printer nf_t

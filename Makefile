@@ -1,23 +1,20 @@
 .PHONY: doc
 
-OCBFLAGS = -I .
-OCB = ocamlbuild -use-menhir -use-ocamlfind $(OCBFLAGS)
 LTXMK = latexmk -xelatex -file-line-error --interaction=nonstopmode 
 
 main:
-	$(OCB) main.native
-	mv main.native pts.exe
+	dune build src/main.exe
+	ln -sf _build/default/src/main.exe main.exe
 
-DIST_FILES = -I _build/
 
 doc: main
-	ocamldoc *.ml -html -charset utf8 -d doc $(DIST_FILES)
+	dune build @doc-private
 
 %.pdf: %.tex
 	$(LTXMK) $<
 
 clean:
-	rm -rf _build/ *.exe doc/*.html doc/*.pdf *~ tests/*~
+	rm -rf _build/ *.exe *~ tests/*~
 
 realclean: clean
 	latexmk -c tests/*.tex

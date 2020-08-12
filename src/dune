@@ -1,0 +1,16 @@
+(ocamllex lexer)
+
+(menhir
+  (modules parser)
+  (flags --explain)
+)
+
+(library
+ 	(name mylib)
+ 	(wrapped false)
+ 	(modules Ast Parser Reduc Lexer Printer Options Typer ))
+
+(executable
+ 	(name main)
+ 	(modules main)
+ 	(libraries mylib))

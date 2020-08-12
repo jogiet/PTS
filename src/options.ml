@@ -39,19 +39,15 @@ let spec =
 let usage = "usage: main [option] file.f"
 
 
-let file =
+let files _ =
 	let file = ref None in
 	let set_file s =
-		file := Some s
-	in begin
-		Arg.parse spec set_file usage;
-		match !file with
+		file := Some s in
+  let _ = Arg.parse spec set_file usage in
+  let file = match !file with
 		|Some f -> f
-		|None -> Arg.usage (Arg.align spec) usage; exit 1
-	end
-
-let proof_file = 
+		|None -> let _ = Arg.usage (Arg.align spec) usage in exit 1 in
   if !proof_file = "" then
-    (Filename.remove_extension file)^".tex"
+    file, (Filename.remove_extension file)^".tex"
   else
-    !proof_file
+    file, !proof_file

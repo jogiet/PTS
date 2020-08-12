@@ -4,7 +4,7 @@ open Options
 
 let new_id = 
   let count = ref 0 in
-  fun id -> incr count; Printf.sprintf "%s_%i" id !count
+  fun id -> incr count; Format.sprintf "%s_%i" id !count
 
   (** [alpha_equiv t t'] returns [true] iff [t] ~α [t'] *)
 let alpha_equiv def t t' = 
@@ -78,7 +78,7 @@ let rec subst x t t' =
 
   (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
    reduction has been performed *)
-let rec beta_reduc_def def term =
+let beta_reduc_def def term =
   let rec aux = function
   | Var id  when IdMap.mem id def -> 
       IdMap.find id def, true
@@ -99,15 +99,15 @@ let rec beta_reduc_def def term =
         Prod (id, t1, t2'), b2
    | Let (x, t1, t2) ->
        let _ = if !reduc_debug then
-         Printf.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s\n" x in
        subst x t1 t2, true
-   | App (Prod (x, t1, t2), t) ->
+   | App (Prod (x, _, t2), t) ->
        let _ = if !reduc_debug then
-         Printf.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s\n" x in
        subst x t t2, true
-   | App (Lam (x, t1, t2), t) ->
+   | App (Lam (x, _, t2), t) ->
        let _ = if !reduc_debug then
-         Printf.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s\n" x in
        subst x t t2, true
    | App (t1, t2) ->
       let t1', b1 = aux t1 in
@@ -130,11 +130,11 @@ let rec get_nf_def def t =
   if b then
     let _ = incr steps in
     let _ = if !reduc_debug then
-      Printf.printf "On continue...\n  %a\n" pretty_printer t in
+      Format.printf "On continue...\n  %a\n" pretty_printer t in
     get_nf_def def t
   else
     let _ = if !reduc_debug then
-      Printf.printf "Forme normale atteinte en %i étapes\n" !steps in
+      Format.printf "Forme normale atteinte en %i étapes\n" !steps in
     t
 
 let get_nf = get_nf_def IdMap.empty
