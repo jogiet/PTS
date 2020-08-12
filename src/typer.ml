@@ -6,6 +6,8 @@ open Options
 let is_sort syst s =
   IdSet.mem s syst.sorts
 
+let all_let: (ident * term located) Queue.t = Queue.create ()
+
 (** [ident] coresponds to the current indentation in Typing progress printing
  * *)
 let ident = ref ""
@@ -119,6 +121,8 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
       let _ = if !type_debug then 
         Format.printf "%sApply Let\n" !ident in
       let tyd, tree1 = type_check syst def env d in
+      let _ = if !type_only then
+        Queue.add (id, tyd) all_let in
       let new_def = IdMap.add id d def in
       let new_env = (id, tyd)::env in
       let typ_res, tree2 = type_check syst new_def new_env t in

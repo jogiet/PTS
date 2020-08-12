@@ -35,13 +35,15 @@ let main x syst =
   let _ = if !parse_only then exit 0 in
   let t, tree = type_check syst IdMap.empty [] x in
   let _ = if !get_proof then print_proof syst (Option.get tree) proof_file in
-  let _ = Format.printf "type = %a\n" pretty_printer t in
+  let _ = Format.printf "=> type : %a\n" pretty_printer t in
   let _ = flush_all () in
   let _ = if !get_metric && !get_proof then
     Format.printf "proof_size = %i\n" (proof_size @@ Option.get tree) in
-  let _ = if !type_only then exit 0 in
+  let _ = if !type_only then
+    Format.printf "%a" print_all_let Typer.all_let; 
+    exit 0 in
   let x = get_nf x in
-  let _ = Format.printf "norm = %a\n" pretty_printer x in
+  let _ = Format.printf "=> normal form : %a\n" pretty_printer x in
   let _ = if !get_metric then
     Format.printf "#reduction steps = %i\n" !steps in
   ()

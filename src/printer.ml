@@ -103,7 +103,6 @@ let pretty_printer latex fmt (t: term located) =
   in print_global fmt t 
 
 let pretty_printer_latex = pretty_printer true
-
 let pretty_printer = pretty_printer false
 
 let print_typing_def latex fmt def =
@@ -142,6 +141,12 @@ let print_typing_env latex fmt env =
 
 let print_typing_env_latex = print_typing_env true
 let print_typing_env = print_typing_env false
+
+let print_all_let fmt =
+  Queue.iter
+    (fun (id, typ) -> Format.fprintf fmt "%s\t: %a\n"
+      id
+      pretty_printer typ)
 
 let print_typing_judgment fmt (def, env, t1, t2) =
   let po, pf = if IdMap.is_empty def && env = [] then "", "" else
