@@ -87,7 +87,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
     typ, proof
   end
   (* Weaken Rule *)
-  | _, (id, _)::_ when not ((is_free id term) || (IdMap.mem id def)) ->
+  | _, (id, _)::_ when not ((is_free id term) (* || (IdMap.mem id def) *)) ->
       weaken syst def env term
   | Var _, env ->
       weaken syst def env term
