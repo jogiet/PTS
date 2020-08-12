@@ -25,7 +25,7 @@ let subst x t t' =
 let (let*) o f =
   match o with
   | None -> None
-  | Some x -> Some x
+  | Some x -> (f x)
 let return x = Some x
 
 exception Def_found of ident
@@ -178,7 +178,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
         let* tree1 = tree1 in
         let* tree2 = tree2 in
         let j = def, env, term, typ_res in
-        (Application (tree1, tree2, j)) in
+        return (Application (tree1, tree2, j)) in
       let _ = if !type_debug then 
         Printf.printf "%sτ = %a\n" !ident pretty_printer typ_res in
       let _ = sub () in
