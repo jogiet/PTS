@@ -9,13 +9,13 @@ let new_id =
   (** [alpha_equiv t t'] returns [true] iff [t] ~α [t'] *)
 let alpha_equiv def t t' = 
   let rec aux map t t' = 
-    match t, t' with
-    | Var s, Var s' when s = s' -> true
-    | Var x, _ when IdMap.mem x def ->
+    match fst t, fst t' with
+    | Var (s, _), Var (s', _) when s = s' -> true
+    | Var (x, _), _ when IdMap.mem x def ->
         aux map (IdMap.find x def) t'
-    | _, Var x when IdMap.mem x def ->
+    | _, Var (x, _) when IdMap.mem x def ->
         aux map t (IdMap.find x def)
-    | Var x, Var x' ->
+    | Var (x, _), Var (x', _) ->
     begin
         try 
           IdMap.find x map = x'
@@ -28,94 +28,96 @@ let alpha_equiv def t t' =
     | Let (x, t1, t2), Let (x', t1', t2') ->
         let map' = IdMap.add x x' map in
         aux map t1 t1' && aux map' t2 t2'
-    | Cast (t', _), t -> aux map t' t
-    | t', Cast (t, _) -> aux map t' t
+    | Cast (t, _), _ -> aux map t t'
+    | _, Cast (t', _) -> aux map t t'
     | _, _ -> false
   in aux IdMap.empty t t'
 
   (** [subst x t t'] remplaces all free occurences of [x] by [t] in [t'] *)
-let rec subst x t t' =
-  match t', t with
-  | Var id, _ when id = x -> t
-  | Var id, _ -> Var id
+let rec subst x (t : term located) ( t' : term located) =
+  match fst t', fst t with
+  | Var (id, pos), _ when id = x -> fst t, pos
+  | Var _, _ -> t'
   | Lam (id, t1, t2), _ when id = x ->
-      Lam (id, subst x t t1, t2)
+      Lam (id, subst x t t1, t2), snd t'
   | Prod (id, t1, t2),_  when id = x ->
-      Prod (id, subst x t t1, t2)
+      Prod (id, subst x t t1, t2), snd t'
   | Let (id, t1, t2), _ when id = x ->
-      Let (id, subst x t t1, t2)
-  | Lam (id, t1, t2), Var id' when id = id' ->
+      Let (id, subst x t t1, t2), snd t'
+  | Lam (id, t1, t2), Var (id', _) when id = id' ->
       let nid = new_id id in
       let t2 = t2
-        |> subst id (Var nid)
+        |> subst id (add_loc @@ Var (add_loc nid))
         |> subst x t
       in
-      Lam (nid, subst x t t1, t2)
-  | Prod (id, t1, t2), Var id' when id = id' ->
+      Lam (nid, subst x t t1, t2), snd t'
+  | Prod (id, t1, t2), Var (id', _) when id = id' ->
       let nid = new_id id in
       let t2 = t2
-        |> subst id (Var nid)
+        |> subst id (add_loc @@ Var (add_loc nid))
         |> subst x t
       in
-      Prod (nid, subst x t t1, t2)
-  | Let (id, t1, t2), Var id' when id = id' ->
+      Prod (nid, subst x t t1, t2), snd t'
+  | Let (id, t1, t2), Var (id', _) when id = id' ->
       let nid = new_id id in
       let t2 = t2 
-        |> subst id (Var nid)
+        |> subst id (add_loc @@ Var (add_loc nid))
         |> subst x t
       in
-      Let (nid, subst x t t1, t2)
+      Let (nid, subst x t t1, t2), snd t'
   | Lam (id, t1, t2), _ ->
-      Lam (id, subst x t t1, subst x t t2)
+      Lam (id, subst x t t1, subst x t t2), snd t'
   | Prod (id, t1, t2), _ ->
-      Prod (id, subst x t t1, subst x t t2)
+      Prod (id, subst x t t1, subst x t t2), snd t'
   | Let (id, t1, t2), _ ->
-      Let (id, subst x t t1, subst x t t2)
+      Let (id, subst x t t1, subst x t t2), snd t'
   | App (t1, t2), _ -> 
-      App (subst x t t1, subst x t t2)
+      App (subst x t t1, subst x t t2), snd t'
   | Cast (t1, new_typ), _ ->
-      Cast (subst x t t1, subst x t new_typ)
+      Cast (subst x t t1, subst x t new_typ), snd t'
 
   (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
    reduction has been performed *)
-let beta_reduc_def def term =
-  let rec aux = function
-  | Var id  when IdMap.mem id def -> 
+let beta_reduc_def def term : term located * bool =
+  let rec aux term : term located * bool =
+  let pos = snd term in
+  match fst term with
+  | Var (id, _)  when IdMap.mem id def -> 
       IdMap.find id def, true
-  | Var id -> Var id, false
+  | Var _ -> term, false
   | Lam (id, t1, t2) ->
       let t1', b1 = aux t1 in
       if b1 then
-        Lam (id, t1', t2), b1
+        (Lam (id, t1', t2), pos), b1
       else
         let t2', b2 = aux t2 in
-        Lam (id, t1, t2'), b2
+        (Lam (id, t1, t2'), pos), b2
   | Prod (id, t1, t2) ->
       let t1', b1 = aux t1 in
       if b1 then
-        Prod (id, t1', t2), b1
+        (Prod (id, t1', t2), pos), b1
       else
         let t2', b2 = aux t2 in
-        Prod (id, t1, t2'), b2
+        (Prod (id, t1, t2'), pos), b2
    | Let (x, t1, t2) ->
        let _ = if !reduc_debug then
          Format.printf "Pattern found : id = %s\n" x in
        subst x t1 t2, true
-   | App (Prod (x, _, t2), t) ->
+   | App ((Prod (x, _, t2), _), t) ->
        let _ = if !reduc_debug then
          Format.printf "Pattern found : id = %s\n" x in
        subst x t t2, true
-   | App (Lam (x, _, t2), t) ->
+   | App ((Lam (x, _, t2), _), t) ->
        let _ = if !reduc_debug then
          Format.printf "Pattern found : id = %s\n" x in
        subst x t t2, true
    | App (t1, t2) ->
       let t1', b1 = aux t1 in
       if b1 then
-        App (t1', t2), b1
+        (App (t1', t2), pos), b1
       else
         let t2', b2 = aux t2 in
-        App (t1, t2'), b2
+        (App (t1, t2'), pos), b2
    | Cast (t, _) -> t, true
    in aux term
 

@@ -1,6 +1,11 @@
 (** This file contains the AST of Pure Type Systems as well as the datatype used
   in type checking and also some utilitatries functions *)
 
+open Lexing
+type 'a located = ('a * (position * position))
+
+let add_loc x = x, Lexing.(dummy_pos, dummy_pos)
+
 (** {5 Identifiers & Utilities} *)
 
 type ident = string
@@ -24,14 +29,14 @@ module Id2Map = Map.Make(Id2)
 (** {5 AST of PTS and important types } *)
 
 type term = 
-  | Var of ident                    (** [Var x] is variable [x] *)
-  | App of (term * term)            (** Function application *)
-  | Lam of (ident * term * term)    
+  | Var of ident located            (** [Var x] is variable [x] *)
+  | App of (term located * term located)            (** Function application *)
+  | Lam of (ident * term located * term located)    
   (** Lambda abstraction : [Lam (x, A, B)] : λ(x: A).B *)
-  | Prod of (ident * term * term)   
+  | Prod of (ident * term located * term located)   
   (** Product abstraction : [Prod (x, A, B)] : ∀(x: A). B *)
-  | Let of (ident * term * term)
-  | Cast of (term * term)
+  | Let of (ident * term located * term located)
+  | Cast of (term located * term located)
 
   (** We assume that a system is functionnal *)
 type system = 
@@ -45,13 +50,13 @@ type system =
 
 (** {5 Typing} *)
 
-type typing_def = term IdMap.t
+type typing_def = term located IdMap.t
 
   (** A typing environment is a map [x] ↦ [term].
    Sort should not appear in typing environment *)
-type typing_env = (ident * term) list
+type typing_env = (ident * term located) list
     
-type typing_judgement = typing_def * typing_env * term * term
+type typing_judgement = typing_def * typing_env * term located * term located
 
 type typing_tree = 
   | Axiom of typing_judgement
@@ -68,7 +73,7 @@ type typing_tree =
   | Application of
       (typing_tree * typing_tree * typing_judgement)
   | Conversion of
-      (typing_tree * term * term * typing_tree * typing_judgement)
+      (typing_tree * term located * term located * typing_tree * typing_judgement)
 
 (** {5 Utilities} *)
 
@@ -82,8 +87,9 @@ let get_judgment = function
   | Application (_, _, j) -> j
   | Conversion (_, _, _, _, j) -> j
 
-let rec get_fv = function
-  | Var id -> IdSet.singleton id
+let rec get_fv t =
+  match fst t with
+  | Var id -> IdSet.singleton @@ fst id
   | Lam (id, t1, t2)
   | Prod (id, t1, t2)
   | Let (id, t1, t2) ->
@@ -93,8 +99,9 @@ let rec get_fv = function
   | Cast (t1, t2) ->
       IdSet.union (get_fv t1) (get_fv t2)
 
-let rec is_free x = function
-  | Var id-> id = x
+let rec is_free x t =
+  match fst t with
+  | Var id-> fst id = x
   | Lam (id, t1, t2)
   | Prod (id, t1, t2)
   | Let (id, t1, t2) ->

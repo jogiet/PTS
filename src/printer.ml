@@ -3,44 +3,44 @@ open Ast
 let new_row = "\\\\\n\\\\\n\\\\\n"
 
   (** [pretty_printer fmt t] outputs a pretty-printed in [fmt] *)
-let pretty_printer latex fmt t =
+let pretty_printer latex fmt (t: term located) =
   let space = if latex then "\\ " else " " in
   let rec print_app fmt t =
-    match t with 
+    match fst t with 
     | App (t1, t2) -> 
         Format.fprintf fmt "%a%s%a" 
         print_app_par t1
         space
         print_atom t2
     | Var id ->
-        Format.fprintf fmt "%s" id
+        Format.fprintf fmt "%s" @@ fst id
     | Lam _ | Prod _ | Let _ | Cast _ -> 
         Format.fprintf fmt "(%a)"
         print_atom t
   and print_app_par fmt t =
-    match t with 
-    | App (t1, Var s) -> 
+    match fst t with 
+    | App (t1, (Var s, _)) -> 
         Format.fprintf fmt "%a%s%s" 
         print_app t1
         space
-        s
+        (fst s)
     | App (t1, t2) -> 
         Format.fprintf fmt "%a%s(%a)" 
         print_app t1
         space
         print_atom t2
     | Var id ->
-        Format.fprintf fmt "%s" id
+        Format.fprintf fmt "%s" @@ fst id
     | Lam _ | Prod _ | Let _ | Cast _ -> 
         Format.fprintf fmt "(%a)"
         print_atom t
   and print_atom fmt t = 
-    match t with
+    match fst t with
     | App _ ->
         Format.fprintf fmt "(%a)" 
         print_app t
     | Var id ->
-        Format.fprintf fmt "%s" id
+        Format.fprintf fmt "%s" @@ fst id
     | Lam (id, t1, t2) ->
         Format.fprintf fmt "λ(%s:%a).%a"
           id
@@ -50,7 +50,7 @@ let pretty_printer latex fmt t =
         Format.fprintf fmt "%a : %a" 
           print_global t1
           print_global t2
-    | Let (id, Cast (t1, new_typ), t2) ->
+    | Let (id, (Cast (t1, new_typ), _), t2) ->
         let let_bind = if latex then "\\texttt{ let }" else "let" in
         let in_bind = if latex then "\\texttt{ in }" else "in" in
         Format.fprintf fmt "%s %s : %a = %a %s %a"
@@ -80,22 +80,22 @@ let pretty_printer latex fmt t =
             print_left_arrow t1
             print_right_arrow t2
   and print_left_arrow fmt t =
-    match t with
-    | Var id -> Format.fprintf fmt "%s" id
+    match fst t with
+    | Var id -> Format.fprintf fmt "%s" @@ fst id
     | _ -> 
         Format.fprintf fmt "(%a)"
           print_global t
   and print_right_arrow fmt t =
-    match t with
+    match fst t with
     | Prod (id, t1, t2) when not @@ is_free id t2 ->
         Format.fprintf fmt "%a → %a"
           print_left_arrow t1
           print_right_arrow t2
     | _ -> print_left_arrow fmt t
   and print_global fmt t =
-    match t with
+    match fst t with
     | Var id ->
-        Format.fprintf fmt "%s" id
+        Format.fprintf fmt "%s" @@ fst id
     | Lam _ | Prod _ | Let _ | Cast _ ->
         print_atom fmt t
     | App _ ->
@@ -239,7 +239,7 @@ let rec print_typing_tree offset let_bind fmt tree =
         offset print_typing_judgment j
   | Ast.LetIntro (_, tree2, j) when let_bind ->
       let _, _, term, _ = j in
-      let ident = match term with
+      let ident = match fst term with
         | Let (id, _, _) -> id
         | _ -> assert false in
       let rule = "\\RightLabel{$Let$}" in
@@ -312,7 +312,7 @@ let rec print_typing_tree_sparse offset let_bind fmt tree =
         offset print_typing_judgment j
   | Ast.LetIntro (_, tree2, j) when let_bind ->
       let _, _, term, _ = j in
-      let ident = match term with
+      let ident = match fst term with
         | Let (id, _, _) -> id
         | _ -> assert false in
       let rule = "\\RightLabel{$Let$}" in
@@ -351,7 +351,7 @@ let rec print_let sparse fmt tree =
   | LetIntro (tree1, tree2, j) ->
       let _ = print_let sparse fmt tree1 in
       let _, _, term, _ = j in
-      let ident = match term with
+      let ident = match fst term with
         | Let (id, _, _) -> id
         | _ -> assert false in
       Format.fprintf fmt "%a\n  \\UIC{\\Huge $%s$}\n\\DisplayProof\n%s"

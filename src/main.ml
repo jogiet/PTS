@@ -64,3 +64,7 @@ let _ =
 	report (lexeme_start_p lb , lexeme_end_p lb);
 	Format.printf "Syntax error \n";
   exit 1
+  | Type_error (msg, pos) ->
+  report pos;
+  Format.printf "Type Error: %s" msg;
+  exit 1

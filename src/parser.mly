@@ -19,7 +19,7 @@ open Ast
 
 %start file
 
-%type <Ast.term * (Ast.system option)> file
+%type <(term located) * (Ast.system option)> file
 
 %%
 
@@ -32,7 +32,9 @@ application:
     { match l with
       | [] -> assert false
       | t::q ->
-          List.fold_left (fun l1 l2 -> App (l1, l2)) t q
+          List.fold_left 
+            (fun l1 l2 -> App (l1, l2), (fst @@ snd l1, snd @@ snd l2 ))
+            t q
     }
 
 atom_app :
@@ -46,22 +48,23 @@ atom_arrow :
 
 abstraction :
   | LAMBDA; LPAR ; li = ident+; DDOT; ty = application; RPAR ; DOT; t = application
-    {List.fold_right (fun i acc -> Lam (i, ty, acc)) li t }
+    {List.fold_right (fun i acc -> Lam (i, ty, acc), ($startpos, $endpos)) li t }
   | LAMBDA; li = ident+; DDOT; ty = application; DOT; t = application
-    {List.fold_right (fun i acc -> Lam (i, ty, acc)) li t }
+    {List.fold_right (fun i acc -> Lam (i, ty, acc), ($startpos, $endpos)) li t }
   | FORALL; LPAR ; li = ident+; DDOT; ty = application; RPAR ; DOT; t = application
-    {List.fold_right (fun i acc -> Prod (i, ty, acc)) li t }
+    {List.fold_right (fun i acc -> Prod (i, ty, acc), ($startpos, $endpos)) li t }
   | FORALL; li = ident+; DDOT; ty = application; DOT; t = application
-    {List.fold_right (fun i acc -> Prod (i, ty, acc)) li t }
+    {List.fold_right (fun i acc -> Prod (i, ty, acc), ($startpos, $endpos)) li t }
   | LET; i = ident; EQUAL; d = application; IN; l = application
-    {Let (i, d, l)}
+    {Let (i, d, l), ($startpos, $endpos) }
   | LET; i = ident; DDOT; typ = application EQUAL; d = application; IN; l = application
-    {Let (i, Cast (d, typ), l)}
+    { let pos = $startpos, $endpos in
+      Let (i, (Cast (d, typ), pos), l), pos }
   | l_arrow = separated_nonempty_list(ARROW, atom_arrow);
     { let rec aux = function
       | [] -> assert false
       | [x] -> x
-      | t::q -> Prod ("-", t, aux q) in
+      | t::q -> Prod ("-", t, aux q), (fst @@ snd t, $endpos) in
       aux l_arrow 
     }
 
@@ -71,5 +74,6 @@ ident:
 
 var :
 	| i = ident 
-		{Var i}
+    { let pos = $startpos, $endpos in
+    Var (i, pos), pos }
 
