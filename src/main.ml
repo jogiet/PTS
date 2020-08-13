@@ -40,8 +40,11 @@ let main x syst =
   let _ = if !get_metric && !get_proof then
     Format.printf "proof_size = %i\n" (proof_size @@ Option.get tree) in
   let _ = if !type_only then
+    begin
     Format.printf "%a" print_all_let Typer.all_let; 
-    exit 0 in
+    exit 0 
+    end
+  in
   let x = get_nf x in
   let _ = Format.printf "=> normal form : %a\n" pretty_printer x in
   let _ = if !get_metric then
