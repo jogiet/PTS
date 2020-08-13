@@ -4,7 +4,7 @@ LTXMK = latexmk -xelatex -file-line-error --interaction=nonstopmode
 
 main:
 	dune build src/main.exe
-	ln -sf _build/default/src/main.exe main.exe
+	ln -sf _build/default/src/main.exe pts.exe
 
 
 doc: main
