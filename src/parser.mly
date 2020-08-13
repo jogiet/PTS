@@ -19,7 +19,7 @@ open Ast
 
 %start file
 
-%type <(term located) * (Ast.system option)> file
+%type <(Ast.term Ast.located) * (Ast.system option)> file
 
 %%
 
