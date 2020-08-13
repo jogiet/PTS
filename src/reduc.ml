@@ -44,27 +44,10 @@ let rec subst x (t : term located) ( t' : term located) =
       Prod (id, subst x t t1, t2), snd t'
   | Let (id, t1, t2), _ when id = x ->
       Let (id, subst x t t1, t2), snd t'
-  | Lam (id, t1, t2), Var (id', _) when id = id' ->
-      let nid = new_id id in
-      let t2 = t2
-        |> subst id (add_loc @@ Var (add_loc nid))
-        |> subst x t
-      in
-      Lam (nid, subst x t t1, t2), snd t'
-  | Prod (id, t1, t2), Var (id', _) when id = id' ->
-      let nid = new_id id in
-      let t2 = t2
-        |> subst id (add_loc @@ Var (add_loc nid))
-        |> subst x t
-      in
-      Prod (nid, subst x t t1, t2), snd t'
-  | Let (id, t1, t2), Var (id', _) when id = id' ->
-      let nid = new_id id in
-      let t2 = t2 
-        |> subst id (add_loc @@ Var (add_loc nid))
-        |> subst x t
-      in
-      Let (nid, subst x t t1, t2), snd t'
+  | Lam (id, _, _), Var (id', _)
+  | Prod (id, _, _), Var (id', _)
+  | Let (id, _, _), Var (id', _) when id = id' ->
+      t' |> alpha_rename |> subst x t 
   | Lam (id, t1, t2), _ ->
       Lam (id, subst x t t1, subst x t t2), snd t'
   | Prod (id, t1, t2), _ ->
@@ -75,6 +58,24 @@ let rec subst x (t : term located) ( t' : term located) =
       App (subst x t t1, subst x t t2), snd t'
   | Cast (t1, new_typ), _ ->
       Cast (subst x t t1, subst x t new_typ), snd t'
+
+and alpha_rename t =
+  let aux id t2 =
+      let nid = new_id id in
+      let nt2 = t2 
+        |> subst id (add_loc @@ Var (add_loc nid)) in
+      nid, nt2 in
+  match fst t with
+  | Prod (id, t1, t2) ->
+      let nid, nt2 = aux id t2 in
+      Prod (nid, t1, nt2), snd t
+  | Lam (id, t1, t2) ->
+      let nid, nt2 = aux id t2 in
+      Lam (nid, t1, nt2), snd t
+  | Let (id, t1, t2) ->
+      let nid, nt2 = aux id t2 in
+      Let (nid, t1, nt2), snd t
+  | _ -> raise (Invalid_argument "binder expected in α-rename")
 
   (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
    reduction has been performed *)

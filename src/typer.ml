@@ -94,7 +94,7 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
   | Lam (x, _, _), env
   | Let (x, _, _), env 
   | Prod (x, _, _), env when (List.mem_assoc x env) ->
-      weaken syst def env term
+      term |> alpha_rename |> type_check syst def env
   | Cast (t, new_typ), env ->
       let typ_res, tree = type_check syst def env t in
       new_typ, conversion syst def env t typ_res tree new_typ 
