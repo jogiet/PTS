@@ -9,6 +9,7 @@ and get_proof   = ref false
 and verb_proof  = ref false
 and short_let   = ref false
 and proof_file  = ref ""
+and inline_def  = ref false
 and get_metric  = ref false
 and color       = ref false
 and no_arrow    = ref false
@@ -29,6 +30,8 @@ let spec =
       " Print the typing tree of arguments of let-bindings in a separate tree" ;
    "--proof-file", Arg.Set_string proof_file,
       " Set the proof filename (default is filname.tex)"; 
+   "--inline-def", Arg.Set inline_def,
+      " Inline the definition during typing";
    "--get-metric", Arg.Set get_metric,
       " prints some metrics such as the size of the proof and the number of
       reduction steps";

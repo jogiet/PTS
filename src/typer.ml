@@ -123,9 +123,12 @@ let rec type_check (syst: system) (def: typing_def) (env: typing_env) term :
       let tyd, tree1 = type_check syst def env d in
       let _ = if !type_only then
         Queue.add (id, tyd) all_let in
-      let new_def = IdMap.add id d def in
-      let new_env = (id, tyd)::env in
-      let typ_res, tree2 = type_check syst new_def new_env t in
+      let new_def, new_env, new_t =
+        if !inline_def then
+          def, env, subst id d t
+        else
+          IdMap.add id d def, (id, tyd)::env, t in
+      let typ_res, tree2 = type_check syst new_def new_env new_t in
       let proof =
         let* tree1 = tree1 in
         let* tree2 = tree2 in
