@@ -1,50 +1,49 @@
 
-let false = \Pi (\phi: *). \phi in
+let false = ∀ (\phi: *). \phi in
 
-let neg = \l \phi: *. \phi -> false in
+let neg = λ \phi: *. \phi -> false in
 
-let U = \Pi \chi : [].(((\chi -> *) -> *) -> \chi) -> ((\chi -> *) -> *) in
+let U = ∀ ξ : [].(((ξ -> *) -> *) -> ξ) -> ((ξ -> *) -> *) in
 
 let PU = (U -> *) in
 
 let PPU = ((U -> *) -> *) in 
 
-let \tau = 
-  \l (t : PPU). 
-    \l \chi : []. 
-      \l f : ((\chi -> *) -> *) -> \chi.
-        \l p : (\chi -> *).
-          t \l x: U. (p (f (x \chi f))) in
+let τ = 
+  λ (t : PPU). 
+    λ ξ : []. 
+      λ f : ((ξ -> *) -> *) -> ξ.
+        λ p : (ξ -> *).
+          t λ x: U. (p (f (x ξ f))) in
 
-let \sigma = 
-  \l s: U.
-    s U \l t: PPU. \tau t in
+let σ = 
+  λ s: U. s U λ t: PPU. τ t in
 
-let \delta = 
-  \l y: U. neg \forall p: PU. (\sigma y p) -> (p (\tau (\sigma y))) in
+let δ = 
+  λ y: U. neg ∀ p: PU. (σ y p) -> (p (τ (σ y))) in
 
-let \omega = 
-  \tau \l p: PU. \forall x: U. (\sigma x p) -> (p x) in
+let ω = 
+  τ λ p: PU. ∀ x: U. (σ x p) -> (p x) in
 
-(\l 0: \forall p: PU. \forall x: U.( ((\sigma x p) -> (p x)) -> (p \omega)).
+(λ 0: ∀ p: PU. ∀ x: U.( ((σ x p) -> (p x)) -> (p ω)).
   (
     (
-      (0 \delta)
-      \l x: U. 
-        \l 2: \sigma x \delta.
-          \l 3: \forall p: PU. ( (\sigma x p) -> (p(\tau (\sigma x))) ).
+      (0 δ)
+      λ x: U. 
+        λ 2: σ x δ.
+          λ 3: ∀ p: PU. ( (σ x p) -> (p(τ (σ x))) ).
             (
-              ( (3 \delta) 2 ) 
-              \l p: PU. (3 \l y: U. p (\tau (\sigma y) ))
+              ( (3 δ) 2 ) 
+              λ p: PU. (3 λ y: U. p (τ (σ y) ))
             )
     )
-    \l p: PU. (0 \l y: U. (p (\tau (\sigma y))) ) 
+    λ p: PU. (0 λ y: U. (p (τ (σ y))) ) 
   )
-  \l p: PU.
-    \l 1: \forall x: U. ( ((\sigma x) p) -> (p x) ).
+  λ p: PU.
+    λ 1: ∀ x: U. ( ((σ x) p) -> (p x) ).
       (
-        (1 \omega)
-        \l x: U. (1 (\tau (\sigma )))
+        (1 ω)
+        λ x: U. (1 (τ (σ )))
       )
 )
           
