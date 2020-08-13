@@ -107,7 +107,7 @@ let pretty_printer = pretty_printer false
 
 let print_typing_def latex fmt def =
   if IdMap.is_empty def then () else
-    let _ = if latex then Format.fprintf fmt "\\begin{array}{r@{\\,}l}" in
+    let _ = if latex then Format.fprintf fmt "\\begin{array}{r%@{\\,}l}" in
     let _ = IdMap.iter
       (fun id t -> 
         if latex then 
@@ -126,7 +126,7 @@ let print_typing_def = print_typing_def false
 
 let print_typing_env latex fmt env =
   if env = [] then () else
-    let _ = if latex then Format.fprintf fmt "\\left\\|\\begin{array}{r@{\\,}l}" in
+    let _ = if latex then Format.fprintf fmt "\\left\\|\\begin{array}{r%@{\\,}l}" in
     let _ = List.iter
       (fun (id, t) -> 
         if latex then 
@@ -164,7 +164,7 @@ let print_typing_syst latex fmt (syst: system) =
   let accf = if latex then "\\}" else "}" in
   let sep  = if latex then "&\\," else ""  in
   let _ = if latex 
-  then Format.fprintf fmt "$\\left\\{\\begin{array}{r@{}l}\n" 
+  then Format.fprintf fmt "$\\left\\{\\begin{array}{r%@{}l}\n" 
     else () in
   let _ = Format.fprintf fmt "𝒮 =%s %s%s%s\n"
     sep acco
