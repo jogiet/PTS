@@ -19,6 +19,9 @@
     | "λ" -> LAMBDA
     | "let" -> LET
     | "in" -> IN
+    | "A" -> A
+    | "R" -> R
+    | "S" -> S
     | _ -> IDENT s
 
   let handle_escaped s =
@@ -69,14 +72,20 @@ rule next_tokens = parse
 		{next_tokens lexbuf}
   | '=' {EQUAL}
 	| '.' {DOT}
+	| ',' {COMMA}
+  | ';' {SEMI}
   | ':' {DDOT}
 	| '(' {LPAR}
-	| eof {EOF}
 	| ')' {RPAR}
+  | '{' {LCB}
+  | '}' {RCB}
   | '*' {IDENT "*"}
   | "∀" {FORALL}
   | "->" {ARROW}
   | "→"  {ARROW}
+  | "𝒮" {S}
+  | "𝒜" {A}
+  | "ℛ" {R}
   | "□"  {IDENT "□ "} 
   | "[]" {IDENT "□ "} 
   | "△"  {IDENT "△ "}
@@ -86,6 +95,7 @@ rule next_tokens = parse
   | escaped as s {handle_escaped s}
 	|'\n' {newline lexbuf; next_tokens lexbuf}
 	| "--" {comment lexbuf}
+	| eof {EOF}
 	| _ as c
 		{raise (Lexing_error ("illegal character : "^ String.make 1 c))}
 

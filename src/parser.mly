@@ -4,28 +4,86 @@
 
 open Ast
 
+let make_syst sorts axioms rules =
+  let sorts = IdSet.of_list sorts in
+  let axioms = List.fold_left
+    (fun acc (s1, s2) ->
+      if IdMap.mem s1 acc then
+        let err = Format.sprintf "%s has type %s & %s!"
+          s1 s2 (IdMap.find s1 acc) in
+        raise (Not_functionnal err)
+      else IdMap.add s1 s2 acc )
+    IdMap.empty
+    axioms
+  in
+  let rules = List.fold_left
+    (fun acc (s1, s2, s3) ->
+      if Id2Map.mem (s1, s2) acc then
+        let err = Format.sprintf "(%s, %s) has rule %s & %s!"
+          s1 s2 s3 (Id2Map.find (s1, s2) acc) in
+        raise (Not_functionnal err)
+      else Id2Map.add (s1, s2) s3 acc )
+    Id2Map.empty
+    rules
+  in
+  { sorts  = sorts   ;
+    axioms = axioms ;
+    rules  = rules  }
+
 %}
 
-
+%token S A R
 %token LAMBDA 
 %token FORALL 
 %token LET IN
 %token ARROW
 %token EQUAL
 %token EOF
-%token LPAR RPAR DDOT DOT
+%token LPAR RPAR LCB RCB DDOT DOT COMMA SEMI
 
 %token <Ast.ident> IDENT
 
 %start file
+%start system
 
 %type <(Ast.term Ast.located) * (Ast.system option)> file
+%type <Ast.system> system
 
 %%
 
 file: 
     | l = application; EOF
 		{l, None}
+    | s = system; l = application; EOF
+    {l, Some s}
+
+system:
+    | s = sorts; a = axioms; r = rules
+    { make_syst s a r }
+
+sorts:
+    | S; EQUAL; LCB; s = separated_nonempty_list(SEMI, ident); RCB
+    { s }
+
+axioms:
+    | A; EQUAL; LCB; a = separated_nonempty_list(SEMI, axiom); RCB
+    { a }
+   
+axiom:
+    | s1 = ident; DDOT; s2 = ident
+    { s1, s2 }
+    | LPAR; s1 = ident; DDOT; s2 = ident; RPAR
+    { s1, s2 }
+
+rules:
+    | R; EQUAL; LCB; r = separated_nonempty_list(SEMI, rule); RCB
+    { r }
+   
+rule:
+    | s1 = ident; COMMA; s2 = ident; COMMA; s3 = ident
+    { s1, s2, s3 }
+    | LPAR; s1 = ident; COMMA; s2 = ident; COMMA; s3 = ident RPAR
+    { s1, s2, s3 }
 
 application:
     | l = atom_app+;
