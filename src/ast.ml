@@ -48,6 +48,8 @@ type system =
     (** A set of rules: ℛ ⊆ 𝒮 ³ *)
   }
 
+exception Not_functionnal of string
+
 (** {5 Typing} *)
 
 type typing_def = term located IdMap.t
@@ -157,6 +159,12 @@ let sortU = IdSet.add "△ " sort
 let axiomsU = IdMap.add "□ " "△ " axioms
 let r_U_minus = Id2Map.add ("△ ", "□ ") "□ " r_fw
 let r_U = Id2Map.add ("△ ", "*") "*" r_U_minus
+let r_HOL = Id2Map.add ("△ ", "*") "*" r_fw
+
+let syst_HOL =
+  { sorts  = sortU     ;
+    axioms = axiomsU   ;
+    rules  = r_HOL     }
 
 let syst_U_minus =
   { sorts  = sortU     ; 
@@ -167,3 +175,4 @@ let syst_U =
   { sorts  = sortU   ; 
     axioms = axiomsU ;
     rules  = r_U     }
+
