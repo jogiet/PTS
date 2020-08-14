@@ -19,9 +19,9 @@
     | "λ" -> LAMBDA
     | "let" -> LET
     | "in" -> IN
-    | "A" -> A
-    | "R" -> R
-    | "S" -> S
+    | "Axioms" -> A
+    | "Rules" -> R
+    | "Sorts" -> S
     | _ -> IDENT s
 
   let handle_escaped s =

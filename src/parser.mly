@@ -4,10 +4,17 @@
 
 open Ast
 
+let check_sort sorts s =
+  if not @@ IdSet.mem s sorts then
+    let err = Format.sprintf "%s is not a defined sort" s in
+    raise (Not_functionnal err)
+
 let make_syst sorts axioms rules =
   let sorts = IdSet.of_list sorts in
   let axioms = List.fold_left
     (fun acc (s1, s2) ->
+      let _ = check_sort sorts s1 in
+      let _ = check_sort sorts s2 in
       if IdMap.mem s1 acc then
         let err = Format.sprintf "%s has type %s & %s!"
           s1 s2 (IdMap.find s1 acc) in
@@ -18,6 +25,9 @@ let make_syst sorts axioms rules =
   in
   let rules = List.fold_left
     (fun acc (s1, s2, s3) ->
+      let _ = check_sort sorts s1 in
+      let _ = check_sort sorts s2 in
+      let _ = check_sort sorts s3 in
       if Id2Map.mem (s1, s2) acc then
         let err = Format.sprintf "(%s, %s) has rule %s & %s!"
           s1 s2 s3 (Id2Map.find (s1, s2) acc) in
