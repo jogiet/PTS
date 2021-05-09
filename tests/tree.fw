@@ -1,0 +1,29 @@
+let tree: * → * =
+ λ α:*.∀ γ:*. γ → (γ → α → γ →γ) → γ in
+let leaf: ∀ α:*. tree α =
+ λ α:*. λ γ: *. λ x_γ: γ. λ f_γ: γ → α → γ →γ. x_γ in
+let node: ∀ α:*. (tree α) → α → (tree α) → (tree α) =
+ λ α:*. λ left: tree α. λ x_α : α. λ right: tree α.
+ λ γ:*. λ x_γ: γ. λ f_γ: γ → α → γ →γ.
+   f_γ (left γ x_γ f_γ) x_α (right γ x_γ f_γ) in
+let nat: * = ∀ α: *. (α → α) → α → α in
+let Z: nat = λ α: *. λ f: α → α. λ x : α. x in
+let S: nat → nat = λ n: nat. λ α: *. λ f: α → α. λ x : α. n α f (f x) in
+let add: nat → nat → nat =
+  λ n m: nat. n nat S m in
+let sum: (tree nat) → nat =
+  λ t: tree nat. t nat Z λ sum_l n sum_r: nat. add (add sum_l n) sum_r in
+let nnode: (tree nat) → nat → (tree nat) → (tree nat) =
+  node nat in
+let tree_n: tree nat =
+	nnode
+		(nnode
+			(leaf nat)
+			(S Z)
+			(leaf nat))
+		(S (S Z))
+		(nnode
+			(leaf nat)
+			(S (S Z))
+			(leaf nat)) in
+sum tree_n

@@ -1,0 +1,5 @@
+(executable 
+	(name main_js)
+	(modules main_js) 
+	(modes byte)
+	(libraries mylib js_of_ocaml))

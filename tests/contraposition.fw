@@ -1,0 +1,5 @@
+let false: * = ∀ α: *. α in
+let neg: * → * = λ P: *. P → false in
+let contraposition: ∀ P Q: *. (P → Q) → (neg Q) → (neg P) =
+  λ P Q: *. λ Hpq: P → Q. λ Hnq: neg Q. λ Hp: P. Hnq (Hpq Hp) in
+contraposition

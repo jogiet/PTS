@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <meta charset="utf-8">
+		<link href='https://fonts.googleapis.com/css?family=EB Garamond' rel='stylesheet'>
+		<link href='https://fonts.googleapis.com/css?family=Inria Sans' rel='stylesheet'>
+		<link rel="stylesheet" href="style.css" type="text/css" />
+    <script type="text/javascript" defer="defer" src="main_js.js"></script>
+    <title>PTS interp</title>
+<script>
+function get_status(){
+    if(compute_status === 0) {
+      output.style.backgroundColor='#ccffcc';
+    } else {
+      output.style.backgroundColor='#ffb3b3';
+    }
+}
+
+function prettify() {
+    var outbox = document.getElementById("output");
+    var inbox = document.getElementById("input");
+
+    var res = inbox.value;
+
+		var replacement =
+			[ [/->/g, 					"→"],
+				[/\\forall/g, 		"∀"],
+				[/\\Pi/g, 				"∀"],
+				[/\\P/g, 					"∀"],
+				[/\\ /g, 					"λ "],
+				[/\\lambda/g, 		"λ"],
+				[/\\l/g, 				  "λ"],
+				[/[]/g, 					"□"],
+				[/\/\\/g, 				"△"],
+        [ /\\alpha/g,     "α"],
+        [ /\\beta/g,      "β"],
+        [ /\\gamma/g,     "γ"],
+        [ /\\delta/g,     "δ"],
+        [ /\\epsilon/g,   "ε"],
+        [ /\\zeta/g,      "ζ"],
+        [ /\\eta/g,       "η"],
+        [ /\\theta/g,     "θ"],
+        [ /\\iota/g,      "ι"],
+        [ /\\kappa/g,     "κ"],
+        [ /\\mu/g,        "μ"],
+        [ /\\nu/g,        "ν"],
+        [ /\\xi/g,        "ξ"],
+        [ /\\omicron/g,   "ο"],
+        [ /\\pi/g,        "π"],
+        [ /\\rho/g,       "ρ"],
+        [ /\\sigma/g,     "σ"],
+        [ /\\tau/g,       "τ"],
+        [ /\\upsilon/g,   "υ"],
+        [ /\\phi/g,       "φ"],
+        [ /\\chi/g,       "χ"],
+        [ /\\psi/g,       "ψ"],
+        [ /\\omega/g,     "ω"],
+			]
+		for(var i = 0; i<replacement.length; i++){
+			console.log(i, repl);
+			var repl = replacement[i];
+			res = res.replace(repl[0], repl[1]);
+		}
+		inbox.value = res;
+}
+
+function get_type() {
+    var outbox = document.getElementById("output");
+    var inbox = document.getElementById("input");
+
+    outbox.value = typer(inbox.value);
+		get_status();
+}
+function interp() {
+    var outbox = document.getElementById("output");
+    var inbox = document.getElementById("input");
+
+    outbox.value = interpret(inbox.value);
+		get_status();
+}
+function change_system(name) {
+    result = set_system(name, system.value);
+    if(name != "custom"){
+      system.value = result;
+    }
+    if(compute_status === 0 && name == "Custom") {
+      system.style.backgroundColor='#ccffcc';
+		} else if(compute_status === 0) {
+      system.style.backgroundColor='white';
+    } else {
+      system.style.backgroundColor='#ffb3b3';
+    }
+}
+function update_cursor(area){
+  var textarea = document.getElementById(area);
+	var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");
+  var line = textLines.length;
+  var column = textLines[textLines.length-1].length;
+
+	document.getElementById("cursorPos").innerHTML =
+		"line "+line+", column "+column;
+}
+</script>
+	</head>
+  <body>
+    <noscript>Sorry, you need to enable JavaScript to see this page.</noscript>
+    <header>a Pure Type System Interpreter</header>
+
+			<div class="row">
+			<div class="column left">
+    		<h2>Syntax</h2>
+						<pre max-width="500">
+
+  expr ::= x, y, z
+        | α, β, γ            (or \alpha, ...)
+        | *, □ , △           (or [], /\)
+        | ∀(x: expr). expr   (or Π, \P, \Pi, \forall)
+        | expr → expr        (or ->)
+        | λ(x: expr). expr   (or \, \l, \lamb, \lambda)
+        | expr expr
+        | let x(: expr)? = expr in expr
+						</code></pre>
+
+			</div>
+			<div class="column right">
+
+    		<h2>System</h2>
+        <p align="center">
+          <button class="but_green" onclick="change_system('STLC')">STLC</button>
+          <button class="but_green" onclick="change_system('F')">F</button>
+          <button class="but_green" onclick="change_system('Fw')">Fω</button>
+          <button class="but_green" onclick="change_system('CC')">CoC</button>
+          <button class="but_green" onclick="change_system('HOL')">HOL</button>
+        </p>
+        <p align="center">
+          <button class="but_red" onclick="change_system('l*')">λ*</button>
+          <button class="but_red" onclick="change_system('U-')">U-</button>
+          <button class="but_red" onclick="change_system('U')">U</button>
+          <button class="button" onclick="change_system('Custom')">Custom</button>
+        </p>
+          <textarea align="center" id="system" oninput='update_cursor("system")' rows=5 cols=60>
+S = {*; □ }
+A = {*: □ }
+R = {*, *, *}
+          </textarea>
+			</div>
+			</div>
+
+    <h2>Input/Output</h2>
+
+        <textarea align="center" id="input" oninput='update_cursor("input")'
+					rows=15 cols=100>
+-- This example show how to encode Ackermann function in system F
+-- From "PROOFS AND TYPES", Girard, Taylor, Lafont
+let nat = ∀ (α: *). (α -> α) -> α -> α in
+let Z = λ α : *. λ f: α -> α. λ x: α. x in
+let S = λ(n: nat). λ(α : *). λ(f: α -> α). λ (x: α). n α f (f x) in
+let Un = S Z in
+let iter = λ(f: nat -> nat). λ (n: nat). n nat f (f Un) in
+let ack = λ (m: nat). λ (n: nat). (m (nat -> nat) iter S) n in
+  ack (S (S Un)) (Un)
+-- it should return Ack(3, 1) = 13
+        </textarea>
+				<div id="cursorPos"> line 0, column 0 </div>
+        <p align="center">
+          <button type="button" onclick="prettify()"
+						title="replace escaped sequences by their unicode counterpart">
+						Prettify
+					</button>
+          <button type="button" onclick="get_type()"
+						title="type the programs and print all let-bindings types">
+						Type Only
+					</button>
+          <button type="button" onclick="interp()"
+						title="type and compute normal form">
+						Evaluate
+					</button>
+        </p>
+
+        <textarea id="output" rows=15 cols=100 readonly></textarea>
+				<br><br><br><br><br><br><br><br><br>
+  </body>
+</html>

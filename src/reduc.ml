@@ -77,8 +77,6 @@ and alpha_rename t =
       Let (nid, t1, nt2), snd t
   | _ -> raise (Invalid_argument "binder expected in α-rename")
 
-  (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
-   reduction has been performed *)
 let beta_reduc_def def term : term located * bool =
   let rec aux term : term located * bool =
   let pos = snd term in
@@ -122,12 +120,13 @@ let beta_reduc_def def term : term located * bool =
    | Cast (t, _) -> t, true
    in aux term
 
+  (** [beta_reduc t] returns [t', true] if [t] → β [t'] and [t, false] if no
+   reduction has been performed *)
 let beta_reduc = beta_reduc_def IdMap.empty
 
+  (** external counters for the number of β-reduction steps. *)
 let steps = ref 0
 
-  (** [get_nf t] tries to compute the normal form of [t]. *i.e.*, it applies
-   {!beta_reduc} as long as it returns [t', true] *)
 let rec get_nf_def def t =
   let t, b = beta_reduc_def def t in
   if b then
@@ -140,4 +139,6 @@ let rec get_nf_def def t =
       Format.printf "Forme normale atteinte en %i étapes\n" !steps in
     t
 
+  (** [get_nf t] tries to compute the normal form of [t]. *i.e.*, it applies
+   {!beta_reduc} as long as it returns [t', true] *)
 let get_nf = get_nf_def IdMap.empty

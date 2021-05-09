@@ -1,0 +1,155 @@
+
+
+h1, h2, h3, h4, h5, h6, div.h7, div.h8, div.h9 {
+	font-style: monospace;
+  font-family: 'Inria Serif';
+  font-size: 2.5rem;
+  border: 1px solid #000;
+  margin-top: 20px;
+  margin-bottom: 2px;
+  text-align: center;
+  padding: 8px;
+  font-weight: normal;
+}
+h1 {
+  font-family: 'Inria Serif';
+  font-size: 4rem;
+	font-variant: small-caps; 
+  padding: 10px;
+	background-color: #90FDFF;
+	width: 100%;
+}
+
+h2 { background-color: #90BDFF; }
+h3 { background-color: #90DDFF; }
+h4 { background-color: #90EDFF; }
+h5 { background-color: #90FDFF; }
+h6 { background-color: #90BDFF; }
+div.h7 { background-color: #90DDFF; }
+div.h8 { background-color: #F0FFFF; }
+div.h9 { background-color: #FFFFFF; }
+
+body {
+	font-family: 'Inria Sans';
+  background-color : #f7f7f7;
+  font-size: 20px;
+	max-width: 95%;
+	margin: auto;
+  padding-bottom: 4em;
+}
+td {
+  font-size: 1rem;
+}
+
+pre { 
+	margin: 10px;
+	white-space: pre-wrap;
+	border: 1px solid #ccc;
+	display: block;
+	font-size: 1rem;
+}
+
+button {
+	font-family: 'Inria Sans';
+  background-color: #90BDFF;
+  color: black;
+  padding: 10px 16px;
+  text-align: center;
+	border-radius: 8px;
+	width: 10rem;
+  font-size: 16px;
+  cursor: pointer;
+	transition-duration: 0.5s;
+}
+
+button:hover {
+  border: 2px solid #90BDFF;
+  background-color: #FFFFFF;
+}
+
+.but_green {
+	width: 4rem;
+  background-color: #00B000;
+}
+
+.but_green:hover {
+  border: 2px solid #00B000;
+}
+
+.but_red {
+	width: 4rem;
+  background-color: #ff3333;
+}
+
+.but_red:hover {
+  border: 2px solid #ff3333;
+}
+
+code {
+	font-size:1rem;
+}
+
+textarea {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+		font-size: 0.8em
+}
+
+.container {
+   text-align: center;
+ }
+
+.container pre {
+  display: inline-block;
+  text-align: left;
+ }
+
+
+footer {
+	display: table;
+	position: fixed;
+	text-align:left;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+	border-top: 1px solid #000;
+	background: #ddd;
+}
+
+.column {
+	margin: auto;
+}
+
+.left {
+  width: 38%;
+	float: left;
+}
+
+.right {
+  width: 58%;
+	float: right;
+}
+
+#cursorPos {
+	font-size:0.7em;
+	font-family: monospace;
+	text-align: right;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+textarea {
+	display: block;
+  width: 100%;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
