@@ -5,6 +5,7 @@ _build/*
 *.merlin
 *.swp
 *.exe
+*.js
 *.tex
 *.aux
 *.fls
