@@ -69,8 +69,8 @@ type effect =
 
 let print_effect apply fmt (effect: effect) =
   if not (!Options.color && apply) then () else
-  Format.fprintf fmt "%s"
-    (match effect with
+  let str_color =
+    match effect with
     | Reset -> reset
     | Dgrey -> dgrey
     | Grey -> grey
@@ -85,5 +85,6 @@ let print_effect apply fmt (effect: effect) =
     | Uline -> uline
     | UUline -> uuline
     | Backgrd -> backgrd
-    | Dashed -> dashed)
+    | Dashed -> dashed in
+  Format.pp_print_as fmt 0 str_color
 

@@ -33,37 +33,39 @@ let set_system content system =
     in
     let _ = Js.Unsafe.set Js.Unsafe.global "compute_status" 0 in
     Js.string @@ Printer.(generic_to_string print_typing_syst !current_system)
-  with 
+  with
     | Ast.Not_functionnal s ->
-      Js.string @@ Format.sprintf "%sThe system is not functionnal %s \n%s" 
+      Js.string @@ Format.sprintf "%sThe system is not functionnal %s \n%s"
 	      (report (lexeme_start_p lb , lexeme_end_p lb))
         s
         system
     | Lexer.Lexing_error s ->
-      Js.string @@ Format.sprintf "%slexical error %s \n%s" 
+      Js.string @@ Format.sprintf "%slexical error %s \n%s"
 	      (report (lexeme_start_p lb , lexeme_end_p lb))
         s
         system
-    | Parser.Error -> 
+    | Parser.Error ->
 	    Js.string @@ Format.sprintf "%sSyntax error \n%s"
 	      (report (lexeme_start_p lb , lexeme_end_p lb))
         system
-  
+
 let typer s =
   let _ = Options.type_only := true in
   let _ = Queue.clear Typer.all_let in
   let s = Js.to_string s in
+  let _ = Printf.printf "%s\n" s in
   let lb = Lexing.from_string s in
   try
     let term, _ = Parser.file Lexer.next_tokens lb in
     let typ, _ = type_check !current_system IdMap.empty [] term in
     let _ = Js.Unsafe.set Js.Unsafe.global "compute_status" 0 in
-    Js.string @@ Format.sprintf "=> type : %s\n%s"
-      Printer.(generic_to_string pretty_printer typ)
-      Printer.(generic_to_string print_all_let Typer.all_let)
-  with 
+    let _ = Format.fprintf Format.str_formatter "@[<v 0>=> type : %a@ %a@]"
+      pretty_printer typ
+      Printer.print_all_let Typer.all_let in
+    Js.string @@ Format.flush_str_formatter ()
+  with
     | Lexer.Lexing_error s ->
-      Js.string @@ Format.sprintf "%slexical error %s \n" 
+      Js.string @@ Format.sprintf "%slexical error %s \n"
 	      (report (lexeme_start_p lb , lexeme_end_p lb))
         s
     | Parser.Error ->
@@ -82,12 +84,14 @@ let interpret s =
     let typ, _ = type_check !current_system IdMap.empty [] term in
     let nf = get_nf term in
     let _ = Js.Unsafe.set Js.Unsafe.global "compute_status" 0 in
-    Js.string @@ 
-         "=> type        : "^Printer.(generic_to_string pretty_printer typ)
-      ^"\n=> normal form : "^Printer.(generic_to_string pretty_printer nf)
-  with 
+    let _ = Format.fprintf Format.str_formatter
+      "@[<v 0>=> type        : %a@ => normal form : %a@]@."
+          pretty_printer typ
+          pretty_printer nf in
+    Js.string @@ Format.flush_str_formatter ()
+  with
     | Lexer.Lexing_error s ->
-      Js.string @@ Format.sprintf "%slexical error %s \n" 
+      Js.string @@ Format.sprintf "%slexical error %s \n"
 	      (report (lexeme_start_p lb , lexeme_end_p lb))
         s
     | Parser.Error ->

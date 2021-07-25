@@ -100,15 +100,15 @@ let beta_reduc_def def term : term located * bool =
         (Prod (id, t1, t2'), pos), b2
    | Let (x, t1, t2) ->
        let _ = if !reduc_debug then
-         Format.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s@ " x in
        subst x t1 t2, true
    | App ((Prod (x, _, t2), _), t) ->
        let _ = if !reduc_debug then
-         Format.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s@ " x in
        subst x t t2, true
    | App ((Lam (x, _, t2), _), t) ->
        let _ = if !reduc_debug then
-         Format.printf "Pattern found : id = %s\n" x in
+         Format.printf "Pattern found : id = %s@ " x in
        subst x t t2, true
    | App (t1, t2) ->
       let t1', b1 = aux t1 in
@@ -132,11 +132,11 @@ let rec get_nf_def def t =
   if b then
     let _ = incr steps in
     let _ = if !reduc_debug then
-      Format.printf "On continue...\n  %a\n" pretty_printer t in
+      Format.printf "On continue...@  %a@ " pretty_printer t in
     get_nf_def def t
   else
     let _ = if !reduc_debug then
-      Format.printf "Forme normale atteinte en %i étapes\n" !steps in
+      Format.printf "Forme normale atteinte en %i étapes@ " !steps in
     t
 
   (** [get_nf t] tries to compute the normal form of [t]. *i.e.*, it applies

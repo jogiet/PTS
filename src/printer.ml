@@ -14,10 +14,9 @@ let pretty_printer latex newline fmt (t: term located) =
   let rec print_app fmt t =
     match fst t with
     | App (t1, t2) ->
-        Format.fprintf fmt "%a%s%s@ %a"
+        Format.fprintf fmt "%a%s@ %a"
         print_app_par t1
         space
-        bc
         print_atom t2
     | Var id ->
         Format.fprintf fmt "%s" @@ fst id
@@ -27,16 +26,14 @@ let pretty_printer latex newline fmt (t: term located) =
   and print_app_par fmt t =
     match fst t with
     | App (t1, (Var s, _)) ->
-        Format.fprintf fmt "%a%s%s@ %s"
+        Format.fprintf fmt "%a%s@ %s"
         print_app t1
         space
-        bc
         (fst s)
     | App (t1, t2) ->
-        Format.fprintf fmt "%a%s%s@ (%a)"
+        Format.fprintf fmt "%a%s@ (%a)"
         print_app t1
         space
-        bc
         print_atom t2
     | Var id ->
         Format.fprintf fmt "%s" @@ fst id
@@ -46,22 +43,17 @@ let pretty_printer latex newline fmt (t: term located) =
   and print_atom fmt t =
     match fst t with
     | App _ ->
-        Format.fprintf fmt "(%s@[<hov 1>%a@]%s)"
-        ao
+        Format.fprintf fmt "(@[<hov 1>%a@])"
         print_app t
-        af
     | Var id ->
         Format.fprintf fmt "%s" @@ fst id
     | Lam (id, t1, t2) ->
-        Format.fprintf fmt "%s@[<hov 1>%aλ%a(%s:%a).%s@,%a@]%s"
-          ao
+        Format.fprintf fmt "@[<hov 1>%aλ%a(%s:%a).@,%a@]"
           colorize Blue
           colorize Reset
           id
           print_atom t1
-          bc
-          print_global t2
-          af
+          print_lam_pi_box t2
     | Cast (t1, t2) ->
         Format.fprintf fmt "%a : %a"
           print_global t1
@@ -70,62 +62,47 @@ let pretty_printer latex newline fmt (t: term located) =
         let let_bind = if latex then "\\texttt{ let }" else "let" in
         let in_bind = if latex then "\\texttt{ in }" else "in" in
         Format.fprintf fmt
-          "%s@[<hov 1>%a%s%a %s %a:%a%s@ %a = %s@ %a %a%s%a%s@ %a@]%s"
-        (*              let  t    :     typ = def     in   t *)
-          "" (* ao *)
+          "@[<hov 0>@[<hov 2>%a%s%a %s %a:%a@ %a = @ %a@] %a%s%a@ %a@]"
+        (*            let  t    :   typ = def    in    t *)
           colorize Blue
           let_bind
           colorize Reset
           id
           colorize Blue
           colorize Reset
-          bc
           print_atom new_typ
-          bc
           print_atom t1
           colorize Blue
           in_bind
           colorize Reset
-          bc
           print_global t2
-          "" (* af *)
     | Let (id, t1, t2) ->
         let let_bind = if latex then "\\texttt{ let }" else "let" in
         let in_bind = if latex then "\\texttt{ in }" else "in" in
-        Format.fprintf fmt "%s@[<hov 0>%a%s%a %s = %s%a %a%s%a%s@ %a@]%s"
-          "" (* ao *)
+        Format.fprintf fmt "@[<hov 0>@[<hov 2>%a%s%a %s = %a @] %a%s%a@ %a@]"
           colorize Blue
           let_bind
           colorize Reset
           id
-          bc
           print_atom t1
           colorize Blue
           in_bind
           colorize Reset
-          bc
           print_global t2
-          "" (* af *)
     | Prod (id, t1, t2) ->
         if IdSet.mem id (get_fv t2) || !Options.no_arrow then
-          Format.fprintf fmt "%s@[<hov 0>%a∀%a(%s:%a).%s@,%a@]%s"
-            ao
+          Format.fprintf fmt "@[<hov 1>%a∀%a(%s:%a).@,%a@]"
             colorize Blue
             colorize Reset
             id
             print_atom t1
-            bc
-            print_global t2
-            af
+            print_lam_pi_box t2
         else
-          Format.fprintf fmt "%s@[<hov 1>%a %a→ %a%s@ %a@]%s"
-            ao
+          Format.fprintf fmt "@[<hov 1>%a %a→ %a@ %a@]"
             print_left_arrow t1
             colorize Blue
             colorize Reset
-            bc
             print_right_arrow t2
-            af
   and print_left_arrow fmt t =
     match fst t with
     | Var id -> Format.fprintf fmt "%s" @@ fst id
@@ -135,13 +112,29 @@ let pretty_printer latex newline fmt (t: term located) =
   and print_right_arrow fmt t =
     match fst t with
     | Prod (id, t1, t2) when not @@ is_free id t2 ->
-        Format.fprintf fmt "%a %a→ %a%s@ %a"
+        Format.fprintf fmt "%a %a→ %a@ %a"
           print_left_arrow t1
           colorize Blue
           colorize Reset
-          bc
           print_right_arrow t2
     | _ -> print_left_arrow fmt t
+  and print_lam_pi_box fmt t =
+    match fst t with
+    | Lam (id, t1, t2) ->
+        Format.fprintf fmt "%aλ%a(%s:%a).@,%a"
+          colorize Blue
+          colorize Reset
+          id
+          print_atom t1
+          print_lam_pi_box t2
+    | Prod (id, t1, t2) when (is_free id t2) || !Options.no_arrow ->
+          Format.fprintf fmt "%a∀%a(%s:%a).@,%a"
+            colorize Blue
+            colorize Reset
+            id
+            print_atom t1
+            print_lam_pi_box t2
+    | _ -> print_global fmt t
   and print_global fmt t =
     match fst t with
     | Var id ->
@@ -149,10 +142,8 @@ let pretty_printer latex newline fmt (t: term located) =
     | Lam _ | Prod _ | Let _ | Cast _ ->
         print_atom fmt t
     | App _ ->
-        Format.fprintf fmt "%s@[<hov 1>%a@]%s"
-          ao
+        Format.fprintf fmt "@[<hov 1>%a@]"
           print_app t
-          af
   in print_global fmt t
 
 let pretty_printer_latex = pretty_printer true ""
@@ -196,11 +187,13 @@ let print_typing_env latex fmt env =
 let print_typing_env_latex = print_typing_env true
 let print_typing_env = print_typing_env false
 
-let print_all_let fmt =
-  Queue.iter
-    (fun (id, typ) -> Format.fprintf fmt "%s\t: %a\n"
+let print_all_let fmt let_queue =
+  let _ = Queue.iter
+    (fun (id, typ) -> Format.fprintf fmt "%s\t: %a@ "
       id
       pretty_printer typ)
+    let_queue in
+  ()
 
 let print_typing_judgment fmt (def, env, t1, t2) =
   let po, pf = if IdMap.is_empty def && env = [] then "", "" else
@@ -214,41 +207,44 @@ let print_typing_judgment fmt (def, env, t1, t2) =
     pretty_printer_latex t2
 
 let print_typing_syst latex fmt (syst: system) =
+  let rec print_list f fmt = function
+    | [] -> ()
+    | [x] -> Format.fprintf fmt "%a" f x
+    | t::q ->
+      Format.fprintf fmt "%a; @," f t;
+      print_list f fmt q
+  in
   let acco = if latex then "\\{" else "{" in
   let accf = if latex then "\\}" else "}" in
   let sep  = if latex then "&\\," else ""  in
+  let _ = Format.fprintf fmt "@[<v 0>" in
   let _ = if latex
-  then Format.fprintf fmt "$\\left\\{\\begin{array}{r%@{}l}\n"
+  then Format.fprintf fmt "$\\left\\{\\begin{array}{r%@{}l}@ "
     else () in
-  let _ = Format.fprintf fmt "𝒮 =%s %s%s%s\n"
+  let _ = Format.fprintf fmt "𝒮 =%s %s@[<hov 0>%a@]%s@ "
     sep acco
-    (IdSet.fold
-      (fun id acc -> if acc = "" then id else
-        Format.sprintf "%s; %s" acc id)
-      syst.sorts "")
+    (print_list (fun fmt id -> Format.fprintf fmt "%s" id))
+    (IdSet.elements syst.sorts)
     accf in
-  let _ = if latex then Format.fprintf fmt "\\\\\n" else () in
-  let _ = Format.fprintf fmt "𝒜 =%s %s%s%s\n"
+  let _ = if latex then Format.fprintf fmt "\\\\@ " else () in
+  let _ = Format.fprintf fmt "𝒜 =%s %s@[<hov 0>%a@]%s@ "
     sep acco
-    (IdMap.fold
-      (fun id1 id2 acc -> if acc = ""
-        then Format.sprintf "(%s: %s)" id1 id2
-        else Format.sprintf "(%s: %s); %s" id1 id2 acc)
-      syst.axioms "")
+    (print_list (fun fmt (id, bind) -> Format.fprintf fmt "(%s: %s)" id bind))
+    (IdMap.bindings syst.axioms)
     accf in
-  let _ = if latex then Format.fprintf fmt "\\\\\n" else () in
-  let _ = Format.fprintf fmt "ℛ =%s %s%s%s\n"
+  let _ = if latex then Format.fprintf fmt "\\\\@ " else () in
+  let _ = Format.fprintf fmt "ℛ =%s %s@[<hov 0>%a@]%s@ "
     sep acco
-    (Id2Map.fold
-      (fun (id1, id2) id3 acc -> if acc = ""
-        then Format.sprintf "(%s, %s, %s)" id1 id2 id3
-        else Format.sprintf "(%s, %s, %s); %s" id1 id2 id3 acc)
-      syst.rules "")
+    (print_list
+       (fun fmt ((id1, id2), bind) ->
+          Format.fprintf fmt "(%s, %s, %s)" id1 id2 bind))
+    (Id2Map.bindings syst.rules)
     accf in
-  let _ = if latex then Format.fprintf fmt "\\\\\n" else () in
+  let _ = if latex then Format.fprintf fmt "\\\\@ " else () in
   let _ = if latex
-    then Format.fprintf fmt "\\end{array}\\right.$\n"
+    then Format.fprintf fmt "\\end{array}\\right.$@ "
     else () in
+  let _ = Format.fprintf fmt "@]" in
   ()
 
 let print_typing_syst_latex = print_typing_syst true
