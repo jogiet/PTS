@@ -50,6 +50,7 @@ let spec =
       " Don't print non dependent product types as arrows";
    "--no-memoize", Arg.Set no_memoize,
       " Don't memoize proof search (might increase time & memory consumption)"]
+  |> Arg.align
 
 let usage = "usage: main [option] file.f"
 
