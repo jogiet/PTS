@@ -53,7 +53,7 @@
     | "omega"     -> IDENT "ω"
     | "P" | "Pi" | "forall" -> FORALL
     | _ -> raise (Lexing_error ("Illegal escaped sequence : "^s))
-    
+
 }
 
 let var  = ['a'-'z' 'A'-'Z']
@@ -86,8 +86,8 @@ rule next_tokens = parse
   | "𝒮" {S}
   | "𝒜" {A}
   | "ℛ" {R}
-  | "□"  {IDENT "□ "} 
-  | "[]" {IDENT "□ "} 
+  | "□"  {IDENT "□ "}
+  | "[]" {IDENT "□ "}
   | "△"  {IDENT "△ "}
   | "/\\"  {IDENT "△ "}
   | '\x5c' {LAMBDA}

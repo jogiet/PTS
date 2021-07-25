@@ -16,7 +16,7 @@ let report (b,e) =
 let set_system content system =
   let system = Js.to_string system in
   let lb = Lexing.from_string system in
-  try 
+  try
     let _ = match Js.to_string content with
       | "STLC" -> current_system := Ast.stlc
       | "l*"   -> current_system := Ast.lamb_star
@@ -74,7 +74,7 @@ let typer s =
     | Type_error (msg, pos) ->
       Js.string @@ Format.sprintf "%sType Error: %s"
         (report pos) msg
-    
+
 let interpret s =
   let _ = Options.type_only := false in
   let s = Js.to_string s in

@@ -43,8 +43,8 @@ let make_syst sorts axioms rules =
 %}
 
 %token S A R
-%token LAMBDA 
-%token FORALL 
+%token LAMBDA
+%token FORALL
 %token LET IN
 %token ARROW
 %token EQUAL
@@ -61,7 +61,7 @@ let make_syst sorts axioms rules =
 
 %%
 
-file: 
+file:
     | l = application; EOF
 		{l, None}
     | s = system; l = application; EOF
@@ -78,7 +78,7 @@ sorts:
 axioms:
     | A; EQUAL; LCB; a = separated_nonempty_list(SEMI, axiom); RCB
     { a }
-   
+
 axiom:
     | s1 = ident; DDOT; s2 = ident
     { s1, s2 }
@@ -88,7 +88,7 @@ axiom:
 rules:
     | R; EQUAL; LCB; r = separated_nonempty_list(SEMI, rule); RCB
     { r }
-   
+
 rule:
     | s1 = ident; COMMA; s2 = ident; COMMA; s3 = ident
     { s1, s2, s3 }
@@ -100,7 +100,7 @@ application:
     { match l with
       | [] -> assert false
       | t::q ->
-          List.fold_left 
+          List.fold_left
             (fun l1 l2 -> App (l1, l2), (fst @@ snd l1, snd @@ snd l2 ))
             t q
     }
@@ -133,15 +133,15 @@ abstraction :
       | [] -> assert false
       | [x] -> x
       | t::q -> Prod ("-", t, aux q), (fst @@ snd t, $endpos) in
-      aux l_arrow 
+      aux l_arrow
     }
 
 ident:
-	| i = IDENT 
+	| i = IDENT
 		{i}
 
 var :
-	| i = ident 
+	| i = ident
     { let pos = $startpos, $endpos in
     Var (i, pos), pos }
 
