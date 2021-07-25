@@ -4,6 +4,8 @@ OCBFLAGS = -I .
 OCB = ocamlbuild -use-menhir -use-ocamlfind $(OCBFLAGS)
 LTXMK = latexmk -xelatex -file-line-error --interaction=nonstopmode
 
+all: main js
+
 main:
 	dune build src/main.exe
 	ln -sf _build/default/src/main.exe pts.exe
