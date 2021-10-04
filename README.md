@@ -4,6 +4,8 @@ PTS : une Perte de Temps Supreme
 This project is an interpretor for Pure Type Systems, a family a typing
 λ-calculi.
 
+**You can try it online on the [github pages](https://meleagant.github.io/PTS)**
+
 This interpretor :
 
 - check if the file is well typed (with the option `type_debug`, it prints on
