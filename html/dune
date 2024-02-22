@@ -1,5 +1,12 @@
-(executable 
+(executable
 	(name main_js)
-	(modules main_js) 
-	(modes byte)
+	(modules main_js)
+	(modes js)
+	; (promote
+	; 	(until-clean))
 	(libraries mylib js_of_ocaml))
+
+(rule
+ (action (copy main_js.bc.js main_js.js))
+ (mode (promote (until-clean)))
+)

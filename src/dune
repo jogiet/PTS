@@ -11,6 +11,10 @@
  	(modules Color Ast Parser Reduc Lexer Printer Options Typer ))
 
 (executable
- 	(name main)
- 	(modules main)
+ 	(name pts)
+		(public_name pts)
+		(promote
+			(until-clean)
+			(into ../))
+ 	(modules pts)
  	(libraries mylib))
