@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Ast.html">
+<link rel="next" href="Options.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Ast" rel="Chapter" href="Ast.html">
+<link title="Color" rel="Chapter" href="Color.html">
+<link title="Options" rel="Chapter" href="Options.html">
+<link title="Printer" rel="Chapter" href="Printer.html">
+<link title="Pts" rel="Chapter" href="Pts.html">
+<link title="Reduc" rel="Chapter" href="Reduc.html">
+<link title="Typer" rel="Chapter" href="Typer.html"><link title="Colors" rel="Section" href="#5_Colors">
+<link title="Style" rel="Section" href="#5_Style">
+<link title="Utils" rel="Section" href="#5_Utils">
+<title>Color</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Ast.html" title="Ast">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Options.html" title="Options">Next</a>
+</div>
+<h1>Module <a href="type_Color.html">Color</a></h1>
+
+<pre><span id="MODULEColor"><span class="keyword">module</span> Color</span>: <code class="code">sig</code> <a href="Color.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<div class="info-desc">
+<p>This file contains string for color output in stdout 
+ ⚠: when used in a file creates buggy logs</p>
+</div>
+</div>
+<hr width="100%">
+
+<pre><span id="VALreset"><span class="keyword">val</span> reset</span> : <code class="type">string</code></pre><p>reset all formatting, colors &amp; style</p>
+<h6 id="5_Colors">Colors</h6>
+<pre><span id="VALgrey"><span class="keyword">val</span> grey</span> : <code class="type">string</code></pre>
+<pre><span id="VALdgrey"><span class="keyword">val</span> dgrey</span> : <code class="type">string</code></pre>
+<pre><span id="VALred"><span class="keyword">val</span> red</span> : <code class="type">string</code></pre>
+<pre><span id="VALgreen"><span class="keyword">val</span> green</span> : <code class="type">string</code></pre>
+<pre><span id="VALyellow"><span class="keyword">val</span> yellow</span> : <code class="type">string</code></pre>
+<pre><span id="VALblue"><span class="keyword">val</span> blue</span> : <code class="type">string</code></pre>
+<pre><span id="VALpurple"><span class="keyword">val</span> purple</span> : <code class="type">string</code></pre>
+<pre><span id="VALcyen"><span class="keyword">val</span> cyen</span> : <code class="type">string</code></pre><h6 id="5_Style">Style</h6>
+<pre><span id="VALbold"><span class="keyword">val</span> bold</span> : <code class="type">string</code></pre>
+<pre><span id="VALitalic"><span class="keyword">val</span> italic</span> : <code class="type">string</code></pre>
+<pre><span id="VALuline"><span class="keyword">val</span> uline</span> : <code class="type">string</code></pre>
+<pre><span id="VALuuline"><span class="keyword">val</span> uuline</span> : <code class="type">string</code></pre><p>Double underlined text</p>
+
+<pre><span id="VALblink"><span class="keyword">val</span> blink</span> : <code class="type">string</code></pre><p>Blinking text</p>
+
+<pre><span id="VALbackgrd"><span class="keyword">val</span> backgrd</span> : <code class="type">string</code></pre><p>reverse font &amp; background color</p>
+
+<pre><span id="VALdashed"><span class="keyword">val</span> dashed</span> : <code class="type">string</code></pre><h6 id="5_Utils">Utils</h6>
+<pre><span id="VALsign"><span class="keyword">val</span> sign</span> : <code class="type">string</code></pre><p>red blinking ⚠ symbol</p>
+
+<pre><span id="VALtick"><span class="keyword">val</span> tick</span> : <code class="type">string</code></pre>
+<pre><span id="VALcross"><span class="keyword">val</span> cross</span> : <code class="type">string</code></pre>
+<pre><code><span id="TYPEeffect"><span class="keyword">type</span> <code class="type"></code>effect</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Reset"><span class="constructor">Reset</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Dgrey"><span class="constructor">Dgrey</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Grey"><span class="constructor">Grey</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Red"><span class="constructor">Red</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Green"><span class="constructor">Green</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Yellow"><span class="constructor">Yellow</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Blue"><span class="constructor">Blue</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Purple"><span class="constructor">Purple</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Cyan"><span class="constructor">Cyan</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Bold"><span class="constructor">Bold</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Italic"><span class="constructor">Italic</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Uline"><span class="constructor">Uline</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.UUline"><span class="constructor">UUline</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Backgrd"><span class="constructor">Backgrd</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTeffect.Dashed"><span class="constructor">Dashed</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><span id="VALprint_effect"><span class="keyword">val</span> print_effect</span> : <code class="type">bool -&gt; Stdlib.Format.formatter -&gt; <a href="Color.html#TYPEeffect">effect</a> -&gt; unit</code></pre></body></html>

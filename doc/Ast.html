@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="next" href="Color.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Ast" rel="Chapter" href="Ast.html">
+<link title="Color" rel="Chapter" href="Color.html">
+<link title="Options" rel="Chapter" href="Options.html">
+<link title="Printer" rel="Chapter" href="Printer.html">
+<link title="Pts" rel="Chapter" href="Pts.html">
+<link title="Reduc" rel="Chapter" href="Reduc.html">
+<link title="Typer" rel="Chapter" href="Typer.html"><link title="Identifiers & Utilities" rel="Section" href="#5_IdentifiersUtilities">
+<link title="AST of PTS and important types " rel="Section" href="#5_ASTofPTSandimportanttypes">
+<link title="Typing" rel="Section" href="#5_Typing">
+<link title="Utilities" rel="Section" href="#5_Utilities">
+<link title="Major PTS : the λ-cube" rel="Section" href="#5_MajorPTSthecube">
+<link title="Some paradoxal PTS" rel="Section" href="#5_SomeparadoxalPTS">
+<title>Ast</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Color.html" title="Color">Next</a>
+</div>
+<h1>Module <a href="type_Ast.html">Ast</a></h1>
+
+<pre><span id="MODULEAst"><span class="keyword">module</span> Ast</span>: <code class="code">sig</code> <a href="Ast.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<div class="info-desc">
+<p>This file contains the AST of Pure Type Systems as well as the datatype used
+  in type checking and also some utilitatries functions</p>
+</div>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPElocated"><span class="keyword">type</span> <code class="type">'a</code> located</span> = <code class="type">'a * (Stdlib.Lexing.position * Stdlib.Lexing.position)</code> </pre>
+
+
+<pre><span id="VALadd_loc"><span class="keyword">val</span> add_loc</span> : <code class="type">'a -&gt; 'a * (Stdlib.Lexing.position * Stdlib.Lexing.position)</code></pre><h6 id="5_IdentifiersUtilities">Identifiers &amp; Utilities</h6>
+<pre><span id="TYPEident"><span class="keyword">type</span> <code class="type"></code>ident</span> = <code class="type">string</code> </pre>
+
+
+<pre><span id="MODULEId"><span class="keyword">module</span> <a href="Ast.Id.html">Id</a></span>: <code class="type">Stdlib.String</code></pre>
+<pre><span id="MODULEId2"><span class="keyword">module</span> <a href="Ast.Id2.html">Id2</a></span>: <code class="code">sig</code> <a href="Ast.Id2.html">..</a> <code class="code">end</code></pre>
+<pre><span id="MODULEId3"><span class="keyword">module</span> <a href="Ast.Id3.html">Id3</a></span>: <code class="code">sig</code> <a href="Ast.Id3.html">..</a> <code class="code">end</code></pre>
+<pre><span id="MODULEIdSet"><span class="keyword">module</span> <a href="Ast.IdSet.html">IdSet</a></span>: <code class="type">Stdlib.Set.Make</code><code class="code">(</code><code class="type"><a href="Ast.Id.html">Id</a></code><code class="code">)</code></pre>
+<pre><span id="MODULEIdMap"><span class="keyword">module</span> <a href="Ast.IdMap.html">IdMap</a></span>: <code class="type">Stdlib.Map.Make</code><code class="code">(</code><code class="type"><a href="Ast.Id.html">Id</a></code><code class="code">)</code></pre>
+<pre><span id="MODULEId2Map"><span class="keyword">module</span> <a href="Ast.Id2Map.html">Id2Map</a></span>: <code class="type">Stdlib.Map.Make</code><code class="code">(</code><code class="type"><a href="Ast.Id2.html">Id2</a></code><code class="code">)</code></pre><h6 id="5_ASTofPTSandimportanttypes">AST of PTS and important types </h6>
+<pre><code><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.Var"><span class="constructor">Var</span></span> <span class="keyword">of</span> <code class="type"><a href="Ast.html#TYPEident">ident</a> <a href="Ast.html#TYPElocated">located</a></code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p><code class="code">Var x</code> is variable <code class="code">x</code></p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.App"><span class="constructor">App</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>)</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>Function application</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.Lam"><span class="constructor">Lam</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEident">ident</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>)</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>Lambda abstraction : <code class="code">Lam (x, A, B)</code> : λ(x: A).B</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.Prod"><span class="constructor">Prod</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEident">ident</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>)</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>Product abstraction : <code class="code">Prod (x, A, B)</code> : ∀(x: A). B</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.Let"><span class="constructor">Let</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEident">ident</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTterm.Cast"><span class="constructor">Cast</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>)</code></code></td>
+
+</tr></table>
+
+
+
+<pre><code><span id="TYPEsystem"><span class="keyword">type</span> <code class="type"></code>system</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsystem.sorts">sorts</span>&nbsp;: <code class="type">IdSet.t</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>A set of sort: 𝒮</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsystem.axioms">axioms</span>&nbsp;: <code class="type"><a href="Ast.html#TYPEident">ident</a> IdMap.t</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>A set of axioms: 𝒜  ⊆ 𝒮 ²</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTsystem.rules">rules</span>&nbsp;: <code class="type"><a href="Ast.html#TYPEident">ident</a> Id2Map.t</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+<div class="info-desc">
+<p>A set of rules: ℛ ⊆ 𝒮 ³</p>
+</div>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+<code>}</code>
+
+<div class="info ">
+<div class="info-desc">
+<p>We assume that a system is functionnal</p>
+</div>
+</div>
+
+
+<pre><span id="EXCEPTIONNot_functionnal"><span class="keyword">exception</span> Not_functionnal</span> <span class="keyword">of</span> <code class="type">string</code></pre>
+<h6 id="5_Typing">Typing</h6>
+<pre><span id="TYPEtyping_def"><span class="keyword">type</span> <code class="type"></code>typing_def</span> = <code class="type"><a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> IdMap.t</code> </pre>
+
+
+<pre><span id="TYPEtyping_env"><span class="keyword">type</span> <code class="type"></code>typing_env</span> = <code class="type">(<a href="Ast.html#TYPEident">ident</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a>) list</code> </pre>
+<div class="info ">
+<div class="info-desc">
+<p>A typing environment is a map <code class="code">x</code> ↦ <code class="code">term</code>.
+   Sort should not appear in typing environment</p>
+</div>
+</div>
+
+
+<pre><span id="TYPEtyping_judgement"><span class="keyword">type</span> <code class="type"></code>typing_judgement</span> = <code class="type"><a href="Ast.html#TYPEtyping_def">typing_def</a> * <a href="Ast.html#TYPEtyping_env">typing_env</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a></code> </pre>
+
+
+<pre><code><span id="TYPEtyping_tree"><span class="keyword">type</span> <code class="type"></code>typing_tree</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Axiom"><span class="constructor">Axiom</span></span> <span class="keyword">of</span> <code class="type"><a href="Ast.html#TYPEtyping_judgement">typing_judgement</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Weakening"><span class="constructor">Weakening</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEident">ident</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Start"><span class="constructor">Start</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Product"><span class="constructor">Product</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Abstraction"><span class="constructor">Abstraction</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.LetIntro"><span class="constructor">LetIntro</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Application"><span class="constructor">Application</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTtyping_tree.Conversion"><span class="constructor">Conversion</span></span> <span class="keyword">of</span> <code class="type">(<a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> * <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> *<br>      <a href="Ast.html#TYPEtyping_tree">typing_tree</a> * <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a>)</code></code></td>
+
+</tr></table>
+
+
+<h6 id="5_Utilities">Utilities</h6>
+<pre><span id="VALchange_var"><span class="keyword">val</span> change_var</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a> -&gt; IdSet.t -&gt; <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> -&gt; <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a></code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">change_var syst set t</code> returns a new term equal to <code class="code">t</code> such that all
+  equal string variables are physically equal</p>
+</div>
+</div>
+
+<pre><span id="VALget_judgment"><span class="keyword">val</span> get_judgment</span> : <code class="type"><a href="Ast.html#TYPEtyping_tree">typing_tree</a> -&gt; <a href="Ast.html#TYPEtyping_judgement">typing_judgement</a></code></pre>
+<pre><span id="VALget_fv"><span class="keyword">val</span> get_fv</span> : <code class="type"><a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> -&gt; IdSet.t</code></pre>
+<pre><span id="VALis_free"><span class="keyword">val</span> is_free</span> : <code class="type"><a href="Ast.html#TYPEident">ident</a> -&gt; <a href="Ast.html#TYPEterm">term</a> <a href="Ast.html#TYPElocated">located</a> -&gt; bool</code></pre>
+<pre><span id="VALproof_size"><span class="keyword">val</span> proof_size</span> : <code class="type"><a href="Ast.html#TYPEtyping_tree">typing_tree</a> -&gt; int</code></pre><h6 id="5_MajorPTSthecube">Major PTS : the λ-cube</h6>
+<pre><span id="VALsort"><span class="keyword">val</span> sort</span> : <code class="type">IdSet.t</code></pre>
+<pre><span id="VALaxioms"><span class="keyword">val</span> axioms</span> : <code class="type">string IdMap.t</code></pre>
+<pre><span id="VALr_stlc"><span class="keyword">val</span> r_stlc</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALr_f"><span class="keyword">val</span> r_f</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALr_fw"><span class="keyword">val</span> r_fw</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALr_cc"><span class="keyword">val</span> r_cc</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALstlc"><span class="keyword">val</span> stlc</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALsyst_f"><span class="keyword">val</span> syst_f</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALsyst_fw"><span class="keyword">val</span> syst_fw</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALcc"><span class="keyword">val</span> cc</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre><h6 id="5_SomeparadoxalPTS">Some paradoxal PTS</h6>
+<pre><span id="VALlamb_star"><span class="keyword">val</span> lamb_star</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALsortU"><span class="keyword">val</span> sortU</span> : <code class="type">IdSet.t</code></pre>
+<pre><span id="VALaxiomsU"><span class="keyword">val</span> axiomsU</span> : <code class="type">string IdMap.t</code></pre>
+<pre><span id="VALr_U_minus"><span class="keyword">val</span> r_U_minus</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALr_U"><span class="keyword">val</span> r_U</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALr_HOL"><span class="keyword">val</span> r_HOL</span> : <code class="type">string Id2Map.t</code></pre>
+<pre><span id="VALsyst_HOL"><span class="keyword">val</span> syst_HOL</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALsyst_U_minus"><span class="keyword">val</span> syst_U_minus</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre>
+<pre><span id="VALsyst_U"><span class="keyword">val</span> syst_U</span> : <code class="type"><a href="Ast.html#TYPEsystem">system</a></code></pre></body></html>

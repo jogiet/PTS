@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <meta charset="utf-8">
+		<link href='https://fonts.googleapis.com/css?family=EB Garamond' rel='stylesheet'>
+	  <link href='https://fonts.googleapis.com/css?family=Inria Sans' rel='stylesheet'>
+    <script type="text/javascript" defer="defer" src="main_js.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/loader.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+		<link rel="stylesheet" href="style.css" type="text/css" />
+    <title>PTS interp</title>
+<script>
+function get_status(){
+    if(compute_status === 0) {
+			output.className = "textarea ok";
+    } else {
+			output.className = "textarea error";
+    }
+}
+
+function prettify() {
+		var res = window.editor.getValue();
+
+		var replacement =
+			[ [/->/g, 					"→"],
+				[/\\forall/g, 		"∀"],
+				[/\\Pi/g, 				"∀"],
+				[/\\P/g, 					"∀"],
+				[/\\ /g, 					"λ "],
+				[/\\lambda/g, 		"λ"],
+				[/\\l/g, 				  "λ"],
+				[/[]/g, 					"□"],
+				[/\/\\/g, 				"△"],
+        [ /\\alpha/g,     "α"],
+        [ /\\beta/g,      "β"],
+        [ /\\gamma/g,     "γ"],
+        [ /\\delta/g,     "δ"],
+        [ /\\epsilon/g,   "ε"],
+        [ /\\zeta/g,      "ζ"],
+        [ /\\eta/g,       "η"],
+        [ /\\theta/g,     "θ"],
+        [ /\\iota/g,      "ι"],
+        [ /\\kappa/g,     "κ"],
+        [ /\\mu/g,        "μ"],
+        [ /\\nu/g,        "ν"],
+        [ /\\xi/g,        "ξ"],
+        [ /\\omicron/g,   "ο"],
+        [ /\\pi/g,        "π"],
+        [ /\\rho/g,       "ρ"],
+        [ /\\sigma/g,     "σ"],
+        [ /\\tau/g,       "τ"],
+        [ /\\upsilon/g,   "υ"],
+        [ /\\phi/g,       "φ"],
+        [ /\\chi/g,       "χ"],
+        [ /\\psi/g,       "ψ"],
+        [ /\\omega/g,     "ω"],
+			]
+		for(var i = 0; i<replacement.length; i++){
+			console.log(i, repl);
+			var repl = replacement[i];
+			res = res.replace(repl[0], repl[1]);
+		}
+		window.editor.setValue(res);
+}
+
+function get_type() {
+    var outbox = document.getElementById("output");
+    var inbox = window.editor.getValue();
+
+    outbox.value = typer(inbox);
+		get_status();
+}
+function interp() {
+    var outbox = document.getElementById("output");
+    var inbox = window.editor.getValue();
+
+    outbox.value = interpret(inbox);
+		get_status();
+}
+function change_system(name) {
+    result = set_system(name, system.value);
+    if(name != "custom"){
+      system.value = result;
+    }
+    if(compute_status === 0 && name == "Custom") {
+			system.className = "textarea ok";
+		} else if(compute_status === 0) {
+			system.className = "textarea";
+    } else {
+			system.className = "textarea error";
+    }
+}
+function update_cursor(area){
+	if(true)
+		return;
+  var textarea = document.getElementById(area);
+	var textLines = textarea.value.substr(0, textarea.selectionStart).split("\n");
+  var line = textLines.length;
+  var column = textLines[textLines.length-1].length;
+
+	document.getElementById("cursorPos").innerHTML =
+		area+", "+"line "+line+", column "+column;
+}
+
+var sample=
+"-- This example show how to encode Ackermann function in system F\n" +
+"-- From _PROOFS AND TYPES_, Girard, Taylor, Lafont\n" +
+"let nat = ∀ (α: *). (α -> α) -> α -> α in\n" +
+"let Z = λ α : *. λ f: α -> α. λ x: α. x in\n" +
+"let S = λ(n: nat). λ(α : *). λ(f: α -> α). λ (x: α). n α f (f x) in\n" +
+"let Un = S Z in\n" +
+"let iter = λ(f: nat -> nat). λ (n: nat). n nat f (f Un) in\n" +
+"let ack = λ (m: nat). λ (n: nat). (m (nat -> nat) iter S) n in\n" +
+"  ack (S (S Un)) (Un)\n" +
+"-- it should return Ack(3, 1) = 13\n"
+
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs' }});
+window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+let proxy = URL.createObjectURL(new Blob([`
+    self.MonacoEnvironment = {
+        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min'
+    };
+    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/base/worker/workerMain.min.js');
+`], { type: 'text/javascript' }));
+require(["vs/editor/editor.main"], function () {
+
+		monaco.editor.defineTheme('myCustomTheme', {
+	    base: 'vs', // can also be vs-dark or hc-black
+	    inherit: true, // can also be false to completely replace the builtin rules
+	    rules: [
+		    { token: 'delimiter', foreground: '994400' },
+		    { token: 'comment', fontStyle: 'italic' },
+	    ]
+    });
+
+		// Register a new language
+    monaco.languages.register({ id: 'pts' });
+
+    // Register a tokens provider for the language
+    monaco.languages.setMonarchTokensProvider('pts', {
+			keywords: [ "let",  "in", "\\", "\\l", "\\lambda", "λ",
+				"∀", "Π", "\\P", "\\Pi", "\\forall" ],
+			operators: [ ":", "=", ".", "->", "→" ],
+
+			brackets: [
+		    { open: '{', close: '}', token: 'delimiter.curly' },
+		    { open: '[', close: ']', token: 'delimiter.square' },
+		    { open: '(', close: ')', token: 'delimiter.parenthesis' },
+		    { open: '<', close: '>', token: 'delimiter.angle' }
+			],
+
+	    tokenizer: {
+		    root: [
+					[/(^--.*$)/, 'comment'],
+					[/\\?[a-zA-Zα-ω∀Π]\w*/, {
+						cases: {
+							'@keywords': 'keyword',
+							'@default': 'identifier'
+						}
+					}],
+					[/[=:.\->→]/, 'delimiter'],
+					[/[{}()\[\]]/, '@brackets'],
+		    ]
+	    }
+    });
+
+    window.editor = monaco.editor.create(document.getElementById('input'), {
+        value: sample,
+        language: 'pts',
+				theme: "myCustomTheme"
+
+    });
+});
+</script>
+	</head>
+  <body>
+    <noscript>Sorry, you need to enable JavaScript to see this page.</noscript>
+    <header>
+    <h1>a Pure Type System Interpreter</h1>
+    </header>
+    <br><br><br><br>
+			<div class="row">
+			<div class="column left">
+    		<h2>Syntax</h2>
+						<pre max-width="500">
+
+  expr ::= x, y, z
+        | α, β, γ            (or \alpha, \beta, ...)
+        | *, □ , △           (or [], /\)
+        | <span class="kw">∀</span>(x<span class="op">:</span> expr)<span class="op">.</span> expr   (or <span class="kw">Π</span>,<span class="kw">\Pi</span>,<span	class="kw">\P</span>,<span class="kw">\forall</span>)
+        | expr <span class="op">→ </span>expr        (or <span class="op">-></span>)
+        | <span class="kw">λ</span>(x<span class="op">:</span> expr)<span class="op">.</span> expr   (or <span class="kw">\</span>,<span class="kw">\l</span>,<span class="kw">\lambda</span>)
+        | expr expr
+        | <span class="kw">let</span> x(<span class="op">:</span> expr)? <span class="op">=</span> expr <span	class="kw">in</span> expr
+						</code></pre>
+
+
+    		<h2>System</h2>
+        <p align="center">
+          <button class="but_green" onclick="change_system('STLC')"
+						title="Simply Typed λ-Calculus">STLC</button>
+          <button class="but_green" onclick="change_system('F')"
+						title="Polymorphic System F">F</button>
+          <button class="but_green" onclick="change_system('Fw')"
+						title="System F with type Constructors">Fω</button>
+          <button class="but_green" onclick="change_system('CC')"
+						title="La Jambon-Œuf-Fromage des PTS">CoC</button>
+          <button class="but_green" onclick="change_system('HOL')"
+						title="Le supplément lardon">HOL</button>
+        </p>
+        <p align="center">
+          <button class="but_red" onclick="change_system('l*')">λ*</button>
+          <button class="but_red" onclick="change_system('U-')">U-</button>
+          <button class="but_red" onclick="change_system('U')">U</button>
+          <button class="button" onclick="change_system('Custom')">Custom</button>
+        </p>
+          <textarea align="center" id="system"
+			    	onClick='update_cursor("system")'
+						oninput='update_cursor("system")' rows=5 cols=60>
+S = {*; □ }
+A = {*: □ }
+R = {*, *, *}
+          </textarea>
+
+        <p align="center">
+          <button type="button" onclick="prettify()"
+						title="replace escaped sequences by their unicode counterpart">
+						Prettify
+					</button>
+          <button type="button" onclick="get_type()"
+						title="type the programs and print all let-bindings types">
+						Type Only
+					</button>
+          <button type="button" onclick="interp()"
+						title="type and compute normal form">
+						Evaluate
+					</button>
+        </p>
+
+			</div>
+			<div class="column right">
+
+
+    <h2>Input/Output</h2>
+        <div id="input" oninput='update_cursor("input")'
+			    onClick='update_cursor("input")'
+					style="height:400px;border:1px solid black;">
+        </div>
+				<br>
+        <textarea id="output" rows=15 cols=100 readonly></textarea>
+			</div>
+			</div>
+				<br><br><br><br><br><br><br><br><br>
+			<footer><div id="cursorPos"> line 0, column 0 </div></footer>
+  </body>
+</html>

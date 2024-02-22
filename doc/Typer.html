@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf8" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Reduc.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Ast" rel="Chapter" href="Ast.html">
+<link title="Color" rel="Chapter" href="Color.html">
+<link title="Options" rel="Chapter" href="Options.html">
+<link title="Printer" rel="Chapter" href="Printer.html">
+<link title="Pts" rel="Chapter" href="Pts.html">
+<link title="Reduc" rel="Chapter" href="Reduc.html">
+<link title="Typer" rel="Chapter" href="Typer.html"><link title="Memoization" rel="Section" href="#5_Memoization">
+<link title="The main functions" rel="Section" href="#5_Themainfunctions">
+<title>Typer</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Reduc.html" title="Reduc">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Typer.html">Typer</a></h1>
+
+<pre><span id="MODULETyper"><span class="keyword">module</span> Typer</span>: <code class="code">sig</code> <a href="Typer.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<div class="info-desc">
+<p>This file contains all the typing functions. The entry point is the
+ <a href="Typer.html#VALtype_check"><code class="code">Typer.type_check</code></a> function with empty typing environment and definitions</p>
+</div>
+</div>
+<hr width="100%">
+
+<pre><span id="VALis_sort"><span class="keyword">val</span> is_sort</span> : <code class="type"><a href="Ast.html#TYPEsystem">Ast.system</a> -&gt; Ast.IdSet.elt -&gt; bool</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">is_sort syst id</code> returns <code class="code">true</code> iff <code class="code">id</code> is defined as a sort in <code class="code">syst</code></p>
+</div>
+</div>
+
+<pre><span id="VALall_let"><span class="keyword">val</span> all_let</span> : <code class="type">(<a href="Ast.html#TYPEident">Ast.ident</a> * <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a>) Stdlib.Queue.t</code></pre>
+<pre><span id="VALident"><span class="keyword">val</span> ident</span> : <code class="type">string Stdlib.ref</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">ident</code> coresponds to the current indentation in Typing progress printing</p>
+</div>
+</div>
+
+<pre><span id="VALadd"><span class="keyword">val</span> add</span> : <code class="type">unit -&gt; unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">add ()</code> adds <code class="code">"|  "</code> a the beggining of <a href="Typer.html#VALident"><code class="code">Typer.ident</code></a></p>
+</div>
+</div>
+
+<pre><span id="VALsub"><span class="keyword">val</span> sub</span> : <code class="type">unit -&gt; unit</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">sub ()</code> removes <code class="code">"|  "</code> a the beggining of <a href="Typer.html#VALident"><code class="code">Typer.ident</code></a></p>
+</div>
+</div>
+
+<pre><span id="VALpretty_printer"><span class="keyword">val</span> pretty_printer</span> : <code class="type">Stdlib.Format.formatter -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; unit</code></pre>
+<pre><span id="VALsubst"><span class="keyword">val</span> subst</span> : <code class="type"><a href="Ast.html#TYPEident">Ast.ident</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a></code></pre><div class="info ">
+<div class="info-desc">
+<p>This function is a stubs with pretty printing for the <a href="Reduc.html#VALsubst"><code class="code">Reduc.subst</code></a> function</p>
+</div>
+</div>
+
+<pre><span id="VAL( let* )"><span class="keyword">val</span> ( let* )</span> : <code class="type">'a option -&gt; ('a -&gt; 'b option) -&gt; 'b option</code></pre>
+<pre><span id="VALreturn"><span class="keyword">val</span> return</span> : <code class="type">'a -&gt; 'a option</code></pre><h6 id="5_Memoization">Memoization</h6>
+<pre><span id="VALmemoize_success"><span class="keyword">val</span> memoize_success</span> : <code class="type">int Stdlib.ref</code></pre><div class="info ">
+<div class="info-desc">
+<p>external counters for the number of success of memoization search</p>
+</div>
+</div>
+
+<pre><span id="VALmemo_tbl_tree"><span class="keyword">val</span> memo_tbl_tree</span> : <code class="type">(<a href="Ast.html#TYPEident">Ast.ident</a>, <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a>) Stdlib.Hashtbl.t</code></pre>
+<pre><span id="VALadd_tbl_tree"><span class="keyword">val</span> add_tbl_tree</span> : <code class="type"><a href="Ast.html#TYPEident">Ast.ident</a> -&gt; <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> -&gt; unit</code></pre>
+<pre><span id="VALtry_tbl_tree"><span class="keyword">val</span> try_tbl_tree</span> : <code class="type"><a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt; <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> * 'a -&gt; <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option</code></pre>
+<pre><span id="VALmemo_tbl_judgt"><span class="keyword">val</span> memo_tbl_judgt</span> : <code class="type">(<a href="Ast.html#TYPEident">Ast.ident</a>, <a href="Ast.html#TYPEtyping_judgement">Ast.typing_judgement</a>) Stdlib.Hashtbl.t</code></pre>
+<pre><span id="VALadd_tbl_judgt"><span class="keyword">val</span> add_tbl_judgt</span> : <code class="type"><a href="Ast.html#TYPEident">Ast.ident</a> -&gt; <a href="Ast.html#TYPEtyping_judgement">Ast.typing_judgement</a> -&gt; unit</code></pre>
+<pre><span id="VALtry_tbl_judgt"><span class="keyword">val</span> try_tbl_judgt</span> : <code class="type"><a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> * 'a -&gt; <a href="Ast.html#TYPEtyping_judgement">Ast.typing_judgement</a> option</code></pre><h6 id="5_Themainfunctions">The main functions</h6>
+<pre><span id="EXCEPTIONType_error"><span class="keyword">exception</span> Type_error</span> <span class="keyword">of</span> <code class="type">string <a href="Ast.html#TYPElocated">Ast.located</a></code></pre>
+<div class="info ">
+<div class="info-desc">
+<p>exception raised when the main typing functions fail.
+   The string is the error message and the location corresponds to the term we
+   tried to type</p>
+</div>
+</div>
+
+<pre><span id="EXCEPTIONDef_found"><span class="keyword">exception</span> Def_found</span> <span class="keyword">of</span> <code class="type"><a href="Ast.html#TYPEident">Ast.ident</a></code></pre>
+<div class="info ">
+<div class="info-desc">
+<p>Exception raised by an auxiliary function when a identifier is found.
+ For the internal use of <a href="Typer.html#VALfind_def"><code class="code">Typer.find_def</code></a> only !</p>
+</div>
+</div>
+
+<pre><span id="VALtype_check"><span class="keyword">val</span> type_check</span> : <code class="type"><a href="Ast.html#TYPEsystem">Ast.system</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> * <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">type_check syst def env term</code>  returns a <code class="code">typ</code> such that the judgment
+   <code class="code">def</code>;<code class="code">env</code>⊢ <code class="code">term</code>:<code class="code">typ</code> in <code class="code">syst</code> holds</p>
+</div>
+</div>
+
+<pre><span id="VALweaken"><span class="keyword">val</span> weaken</span> : <code class="type"><a href="Ast.html#TYPEsystem">Ast.system</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> * <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">weaken syst def env term</code> try to weaken the typing environment <code class="code">env</code>
+  (and if needed the typing definition <code class="code">def</code>), be removing its head.
+  It tries to type <code class="code">term</code> in the new environment</p>
+</div>
+</div>
+
+<pre><span id="VALfind_def"><span class="keyword">val</span> find_def</span> : <code class="type"><a href="Ast.html#TYPEsystem">Ast.system</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> * <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">find_def syst def env term typ tree</code> tries to find if the <code class="code">typ</code> inferred
+ for the <code class="code">term</code> can be expressed as a defined identifier ( i.e. with a let
+ binding).
+ If so it add the <b>Conversion</b> rule to the tree</p>
+</div>
+</div>
+
+<pre><span id="VALconversion"><span class="keyword">val</span> conversion</span> : <code class="type"><a href="Ast.html#TYPEsystem">Ast.system</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_def">Ast.typing_def</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_env">Ast.typing_env</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt;<br>       <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt;<br>       <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option -&gt; <a href="Ast.html#TYPEterm">Ast.term</a> <a href="Ast.html#TYPElocated">Ast.located</a> -&gt; <a href="Ast.html#TYPEtyping_tree">Ast.typing_tree</a> option</code></pre><div class="info ">
+<div class="info-desc">
+<p><code class="code">coversion syst def env t typ tree new_typ</code> try to apply the <b>Conversion</b>
+ rule by checking \alpha equivalence between <code class="code">typ</code> and <code class="code">new_typ</code> also the
+ <code class="code">new_typ</code> is correctly formed (i.e. it has a sort)</p>
+</div>
+</div>
+</body></html>
