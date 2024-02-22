@@ -1,0 +1,45 @@
+name: page
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set-up OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: "4.14"
+
+      - name: install dependancies
+        run: opam install . --deps-only -y
+
+      - name: Build
+        run: opam exec -- dune build @@html/all
+
+      - name: public
+        run: |
+          mkdir public
+          mv html/index.html public/
+          mv html/style.css public/
+          mv html/main_js.js public/
+
+      - name: documentation
+        run: |
+          opam exec -- ocamldoc src/*.ml -html -charset utf8 -d ./doc -I _build/default/src/.mylib.objs/byte
+          cp -r doc/ public/
+      -
+        name: Deploy to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: gh-pages
+          build_dir: public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
