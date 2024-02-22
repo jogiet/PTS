@@ -1,20 +1,14 @@
 .PHONY: doc tests
 
-OCBFLAGS = -I .
-OCB = ocamlbuild -use-menhir -use-ocamlfind $(OCBFLAGS)
 LTXMK = latexmk -xelatex -file-line-error --interaction=nonstopmode
 
 all: main js
 
 main:
-	dune build src/main.exe
-	ln -sf _build/default/src/main.exe pts.exe
+	dune build @@src/all
 
 js:
-	dune build html/main_js.bc
-	js_of_ocaml _build/default/html/main_js.bc
-	mv _build/default/html/*.js html/
-	cp -r html/. ~/www/PTS/
+	dune build @@html/all
 
 DIST_FILES = -I _build/default/src/.mylib.objs/byte
 
@@ -28,7 +22,8 @@ tests:
 	./tests/tests.sh
 
 clean:
-	rm -rf _build/ *.exe html/*.js doc/*.html doc/*.pdf *~ */*~
+	dune clean
+	rm -rf doc/*.html doc/*.pdf *~ */*~
 
 realclean: clean
 	latexmk -c tests/*.tex
